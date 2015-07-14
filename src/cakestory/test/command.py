@@ -44,3 +44,7 @@ class CommandGetLevel(Command):
 class CommandGetChapter(Command):
     def __init__(self, hash):
         Command.__init__(self, "/map/chapter", {"hash": hash})
+
+class CommandQueryLevels(Command):
+    def __init__(self, session, levels):
+        Command.__init__(self, "/query/levels", {"session": session, "levels": levels})

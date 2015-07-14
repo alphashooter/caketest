@@ -24,11 +24,15 @@ class ClientState:
     def get_game_balance(self):
         return self.data["user_data"]["game_balance"]
 
+    def get_chapters(self):
+        return self.data["user_data"]["chapters"]
+
     def get_defs_hash(self):
         return self.data["defs_hash"]
 
     user_id = property(get_user_id)
     progress = property(get_progress)
+    chapters = property(get_chapters)
     real_balance = property(get_real_balance)
     game_balance = property(get_game_balance)
     defs_hash = property(get_defs_hash)
@@ -44,18 +48,13 @@ class ClientDefs:
     def merge(self, data):
         utils.merge_objects(self.data, data)
 
-    def get_chapters(self):
-        chapters = list()
-        for i in range(len(self.data["mapscreen"]["chapters"])):
-            chapter = self.data["mapscreen"]["chapters"][i].copy()
-            # FIXME: It would be better to merge state.chapters object with state.mapscreen.chapters
-            utils.merge_objects(
-                chapter,
-                self.data["chapters"][str(chapter["id"])] # FIXME: Why chapters ids in state.mapscreen.chapters are ints but in state.chapters are strings?
-            )
-            chapters.append(chapter)
-        return chapters
+    def get_mapscreen(self):
+        return self.data["mapscreen"]["chapters"]
 
+    def get_chapters(self):
+        return self.data["chapters"]
+
+    mapscreen = property(get_mapscreen)
     chapters = property(get_chapters)
 
 
@@ -113,7 +112,7 @@ class Client:
         self.defs.load(self.state.defs_hash)
 
     def chapters_update(self):
-        self.chapters = list(map.Chapter(self.defs.chapters[i]) for i in range(len(self.defs.chapters)))
+        self.chapters = list(map.Chapter(self, self.defs.mapscreen[i]) for i in range(len(self.defs.mapscreen)))
         for i in range(len(self.chapters)):
             self.chapters[i].load()
 
