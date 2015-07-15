@@ -10,8 +10,6 @@ class RequestMethod:
 class Connection:
     SECRET_TOKEN = "gghdfuuw9oll;[-&66wtgg00091835gfbns76dferRREjqls,,cll;0,cnnsggsiwuwiiwhhfbdsfkhkhkjhkjiuoiueqeroiujfkb"
 
-    instance = None
-
     @staticmethod
     def get_request_string(data):
         if isinstance(data, dict):
@@ -28,7 +26,7 @@ class Connection:
         return sha.hexdigest()
 
     def __init__(self, host):
-        self.connection = httplib.HTTPSConnection(host)
+        self.__connection = httplib.HTTPSConnection(host)
 
     def send_post(self, command):
         data = command.data
@@ -40,9 +38,9 @@ class Connection:
               "Command: %s\n" \
               "Data:    %s\n" % (command.name, json.dumps(data))
 
-        self.connection.request("POST", command.name, json.dumps(data), {"Content-Type": "application/json"})
+        self.__connection.request("POST", command.name, json.dumps(data), {"Content-Type": "application/json"})
 
-        response = self.connection.getresponse()
+        response = self.__connection.getresponse()
         if response.status != 200:
             raise RuntimeError("Invalid server response status %d: %s" % (response.status, response.reason))
         data = response.read()
@@ -59,14 +57,14 @@ class Connection:
             print "Server request\n" \
                   "Command: %s\n" \
                   "Data:    %s\n" % (command.name, query)
-            self.connection.request("GET", "%s?%s" % (command.name, query))
+            self.__connection.request("GET", "%s?%s" % (command.name, query))
         else:
             print "Server request:\n" \
                   "Command: %s\n" \
                   "Data:    None\n" % command.name
-            self.connection.request("GET", command.name)
+            self.__connection.request("GET", command.name)
 
-        response = self.connection.getresponse()
+        response = self.__connection.getresponse()
         if response.status != 200:
             raise RuntimeError("Invalid server response status %d: %s" % (response.status, response.reason))
         data = response.read()
