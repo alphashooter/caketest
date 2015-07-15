@@ -5,32 +5,44 @@ import command
 
 class Level:
     def __init__(self, client, chapter, id, hash, data=None):
-        self.client = client
-        self.chapter = chapter
+        self._client = client
+        self._chapter = chapter
 
-        self.id = str(id)
-        self.hash = str(hash)
-        self.data = None
+        self._id = str(id)
+        self._hash = str(hash)
+        self._data = None
 
         if data:
             self.parse(data)
 
     def parse(self, data):
-        self.data = data
+        self._data = data
 
     def load(self):
-        self.parse(net.Connection.instance.send_get(command.CommandGetLevel(self.hash)))
+        self.parse(net.send(command.GetLevel(self._hash)))
+
+    def get_id(self):
+        return self._id
+
+    def get_hash(self):
+        return self._hash
+
+    def get_chapter(self):
+        return self._chapter
+
+    def get_map(self):
+        return self._chapter.get_map()
 
     def get_is_loaded(self):
-        return bool(self.data)
+        return bool(self._data)
 
     def get_is_bonus(self):
-        return bool(re.search(r"bonus_\d+", self.id))
+        return bool(re.search(r"bonus_\d+", self._id))
 
     def get_user_score(self):
-        rsp = net.Connection.instance.send_post(command.CommandQueryLevels(self.client.session, [self.id]))
-        if self.id in rsp:
-            return rsp[self.id]
+        rsp = net.Connection.instance.send_post(command.QueryLevels(self._client.session, [self._id]))
+        if self._id in rsp:
+            return rsp[self._id]
         else:
             return 0
 
@@ -43,65 +55,80 @@ class Level:
 
     def get_star(self, num):
         if not self.get_is_loaded() : self.load()
-        return self.data["scores"][num - 1]
+        return self._data["scores"][num - 1]
 
+    id = property(get_id)
+    hash = property(get_hash)
     is_loaded = property(get_is_loaded)
+
+    chapter = property(get_chapter)
+    map = property(get_map)
     is_bonus = property(get_is_bonus)
 
 class Chapter:
-    def __init__(self, client, data=None):
-        self.client = client
+    def __init__(self, client, map, data=None):
+        self._client = client
+        self._map = map
 
-        self.id = None
-        self.hash = None
-        self.levels = None
+        self._id = None
+        self._hash = None
+        self._levels = None
 
         if data:
             self.parse(data)
 
     def parse(self, data):
-        self.id = str(data["id"])
-        self.hash = str(data["hash"])
-        self.levels = list(Level(self.client, self, data["levels"][i]["id"], data["levels"][i]["hash"]) for i in range(len(data["levels"])))
+        self._id = str(data["id"])
+        self._hash = str(data["hash"])
+        self._levels = list(Level(self._client, self, data["levels"][i]["id"], data["levels"][i]["hash"]) for i in range(len(data["levels"])))
         if "bonus_level" in data:
-            self.levels.append(Level(self.client, self, data["bonus_level"]["id"], data["bonus_level"]["hash"]))
+            self._levels.append(Level(self._client, self, data["bonus_level"]["id"], data["bonus_level"]["hash"]))
 
     def load(self, separately=False):
         if separately:
-            for i in range(len(self.levels)):
-                self.levels[i].load()
+            for i in range(len(self._levels)):
+                self._levels[i].load()
         else:
-            rsp = net.Connection.instance.send_get(command.CommandGetChapter(self.hash))
+            rsp = net.send(command.GetChapter(self._hash))
             for key in list(rsp.keys()):
                 self.get_level_by_hash(key).parse(rsp[key])
 
+    def get_id(self):
+        return self._id
+
+    def get_hash(self):
+        return self._hash
+
+    def get_map(self):
+        return self._map
+
     def get_is_loaded(self):
-        if not self.levels:
+        if not self._levels:
             return False
-        for i in range(len(self.levels)):
-            if not self.levels[i].get_is_loaded():
+        for i in range(len(self._levels)):
+            if not self._levels[i].get_is_loaded():
                 return False
         return True
 
     def get_level_by_hash(self, hash):
-        for i in range(len(self.levels)):
-            if self.levels[i].hash == str(hash):
-                return self.levels[i]
+        for i in range(len(self._levels)):
+            if self._levels[i].hash == str(hash):
+                return self._levels[i]
         return None
 
     def get_level(self, id):
-        for i in range(len(self.levels)):
-            if self.levels[i].id == str(id):
-                return self.levels[i]
+        for i in range(len(self._levels)):
+            if self._levels[i].id == str(id):
+                return self._levels[i]
         return None
 
     def get_unlocks(self):
-        if "unlocks" in self.client.state.chapters[self.id]:
-            return list(self.client.state.chapters[self.id]["unlocks"])
+        if "unlocks" in self._client.state.chapters[self._id]:
+            return list(self._client.state.chapters[self._id]["unlocks"])
         return list()
 
     def get_locks_count(self):
-        return int(self.client.defs.chapters[self.id]["unlocks_count"])
+        return int(self._client.defs.chapters[self._id]["unlocks_count"])
 
     def get_unlocks_count(self):
         return len(self.get_unlocks())
@@ -112,8 +139,11 @@ class Chapter:
     def get_is_unlocked(self):
         return not self.get_is_locked()
 
+    id = property(get_id)
+    hash = property(get_hash)
     is_loaded = property(get_is_loaded)
 
+    map = property(get_map)
     locks = property(get_locks_count)
     unlocks = property(get_unlocks_count)
     is_locked = property(get_is_locked)
@@ -122,47 +152,47 @@ class Chapter:
 
 class Map:
     def __init__(self, client, data=None):
-        self.client = client
-        self.chapters = None
+        self._client = client
+        self._chapters = None
         if data:
             self.parse(data)
 
     def parse(self, data):
-        self.chapters = list(Chapter(self.client, data[i]) for i in range(len(data)))
+        self._chapters = list(Chapter(self._client, self, data[i]) for i in range(len(data)))
 
     def load(self, separately=False):
-        for i in range(len(self.chapters)):
-            self.chapters[i].load(separately)
+        for i in range(len(self._chapters)):
+            self._chapters[i].load(separately)
 
     def get_is_loaded(self):
-        if not self.chapters:
+        if not self._chapters:
             return False
-        for i in range(len(self.chapters)):
-            if not self.chapters[i].get_is_loaded():
+        for i in range(len(self._chapters)):
+            if not self._chapters[i].get_is_loaded():
                 return False
         return True
 
     def get_chapter_by_hash(self, hash):
-        for i in range(len(self.chapters)):
-            if self.chapters[i].hash == str(hash):
-                return self.chapters[i]
+        for i in range(len(self._chapters)):
+            if self._chapters[i].hash == str(hash):
+                return self._chapters[i]
         return None
 
     def get_chapter(self, id):
-        for i in range(len(self.chapters)):
-            if self.chapters[i].id == str(id):
-                return self.chapters[i]
+        for i in range(len(self._chapters)):
+            if self._chapters[i].id == str(id):
+                return self._chapters[i]
         return None
 
     def get_level_by_hash(self, hash):
-        for i in range(len(self.chapters)):
-            level = self.chapters[i].get_level_by_hash(hash)
+        for i in range(len(self._chapters)):
+            level = self._chapters[i].get_level_by_hash(hash)
             if level: return level
         return None
 
     def get_level(self, id):
-        for i in range(len(self.chapters)):
-            level = self.chapters[i].get_level(id)
+        for i in range(len(self._chapters)):
+            level = self._chapters[i].get_level(id)
             if level: return level
         return None
 

@@ -2,6 +2,10 @@ import httplib
 import hashlib
 import json
 
+class RequestMethod:
+    POST = "POST"
+    GET = "GET"
+
 
 class Connection:
     SECRET_TOKEN = "gghdfuuw9oll;[-&66wtgg00091835gfbns76dferRREjqls,,cll;0,cnnsggsiwuwiiwhhfbdsfkhkhkjhkjiuoiueqeroiujfkb"
@@ -22,10 +26,6 @@ class Connection:
         sha = hashlib.sha1()
         sha.update(Connection.get_request_string(data) + token)
         return sha.hexdigest()
-
-    @staticmethod
-    def init(host):
-        Connection.instance = Connection(host)
 
     def __init__(self, host):
         self.connection = httplib.HTTPSConnection(host)
@@ -74,3 +74,24 @@ class Connection:
         print "Server response\n" \
               "Data:    %s\n" % data
         return json.loads(data)
+
+    def send(self, command):
+        if command.method == RequestMethod.POST:
+            return self.send_post(command)
+        elif command.method == RequestMethod.GET:
+            return self.send_get(command)
+
+
+__connection = None
+
+
+def connection(host):
+    global __connection
+    __connection = Connection(host)
+
+
+def send(command):
+    global __connection
+    if not __connection:
+        raise RuntimeError("Connection must be inited.")
+    return __connection.send(command)

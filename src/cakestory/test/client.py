@@ -11,7 +11,7 @@ class ClientState:
         self.data = None
 
     def load(self):
-        self.merge(net.Connection.instance.send_post(command.CommandInit(self.client.session)))
+        self.merge(net.send(command.GetState(self.client.session)))
 
     def merge(self, data):
         if self.data:
@@ -63,7 +63,7 @@ class ClientDefs:
         self.data = None
 
     def load(self):
-        self.merge(net.Connection.instance.send_get(command.CommandGetDefs(self.client.state.defs_hash)))
+        self.merge(net.send(command.GetDefs(self.client.state.defs_hash)))
 
     def merge(self, data):
         if self.data:
@@ -128,11 +128,11 @@ class Client:
         self.uid = uid
         self.token = token
 
-        rsp = net.Connection.instance.send_post(command.CommandSessionGet(network, uid, token, auth))
+        rsp = net.send(command.SessionGet(network, uid, token, auth))
         self.session = rsp["session"]
 
     def session_update(self, auth=None):
-        rsp = net.Connection.instance.send_post(command.CommandSessionUpdate(self.session, auth))
+        rsp = net.send(command.SessionUpdate(self.session, auth))
         self.session = rsp["session"]
 
     def init(self, network=None, uid=None, token=None, auth=None):

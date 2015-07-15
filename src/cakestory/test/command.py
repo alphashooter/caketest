@@ -1,10 +1,13 @@
+import net
+
 class Command:
-    def __init__(self, name, data=None):
+    def __init__(self, name, data=None, method=net.RequestMethod.POST):
         self.name = name
         self.data = data
+        self.method = method
 
 
-class CommandSessionGet(Command):
+class SessionGet(Command):
     def __init__(self, network, uid, token, auth=None):
         data = {
             "client_network": {
@@ -15,36 +18,36 @@ class CommandSessionGet(Command):
         }
         if auth:
             data["auth_network"] = auth
-        Command.__init__(self, "/session/get", data)
+        Command.__init__(self, "/session/get", data, net.RequestMethod.POST)
 
 
-class CommandSessionUpdate(Command):
+class SessionUpdate(Command):
     def __init__(self, session, auth=None):
         data = {"session": session}
         if auth:
             data["auth_network"] = auth
-        Command.__init__(self, "/session/update", data)
+        Command.__init__(self, "/session/update", data, net.RequestMethod.POST)
 
 
-class CommandInit(Command):
+class GetState(Command):
     def __init__(self, session):
-        Command.__init__(self, "/init", {"session": session})
+        Command.__init__(self, "/init", {"session": session}, net.RequestMethod.POST)
 
 
-class CommandGetDefs(Command):
+class GetDefs(Command):
     def __init__(self, hash):
-        Command.__init__(self, "/defs", {"hash": hash})
+        Command.__init__(self, "/defs", {"hash": hash}, net.RequestMethod.GET)
 
 
-class CommandGetLevel(Command):
+class GetLevel(Command):
     def __init__(self, hash):
-        Command.__init__(self, "/map/level", {"hash": hash})
+        Command.__init__(self, "/map/level", {"hash": hash}, net.RequestMethod.GET)
 
 
-class CommandGetChapter(Command):
+class GetChapter(Command):
     def __init__(self, hash):
-        Command.__init__(self, "/map/chapter", {"hash": hash})
+        Command.__init__(self, "/map/chapter", {"hash": hash}, net.RequestMethod.GET)
 
-class CommandQueryLevels(Command):
+class QueryLevels(Command):
     def __init__(self, session, levels):
-        Command.__init__(self, "/query/levels", {"session": session, "levels": levels})
+        Command.__init__(self, "/query/levels", {"session": session, "levels": levels}, net.RequestMethod.POST)
