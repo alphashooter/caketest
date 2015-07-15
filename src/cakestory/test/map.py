@@ -110,6 +110,9 @@ class Level:
     def get_is_bonus(self):
         return self.__bonus
 
+    def get_user_finished(self):
+        return self.__client.state.progress > self.get_id()
+
     def get_user_score(self):
         rsp = net.send(command.QueryLevels(self.__client.session, [self.get_qualified_id()]))
         if self.__id in rsp:
@@ -139,12 +142,12 @@ class Level:
 
     next = property(get_next)
     prev = property(get_prev)
-    next_in_chapter = property(get_next_in_chapter)
-    prev_in_chapter = property(get_prev_in_chapter)
-
     is_first = property(get_is_first)
     is_last = property(get_is_last)
     is_current = property(get_is_current)
+
+    next_in_chapter = property(get_next_in_chapter)
+    prev_in_chapter = property(get_prev_in_chapter)
     is_first_in_chapter = property(get_is_first_in_chapter)
     is_last_in_chapter = property(get_is_last_in_chapter)
 
