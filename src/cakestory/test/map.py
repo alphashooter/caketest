@@ -33,6 +33,9 @@ class Level:
     def get_map(self):
         return self._chapter.get_map()
 
+    def get_is_inited(self):
+        return True
+
     def get_is_loaded(self):
         return bool(self._data)
 
@@ -60,26 +63,25 @@ class Level:
     id = property(get_id)
     hash = property(get_hash)
     is_loaded = property(get_is_loaded)
+    is_inited = property(get_is_inited)
 
     chapter = property(get_chapter)
     map = property(get_map)
     is_bonus = property(get_is_bonus)
 
 class Chapter:
-    def __init__(self, client, map, data=None):
+    def __init__(self, client, map, id, hash, data=None):
         self._client = client
         self._map = map
 
-        self._id = None
-        self._hash = None
+        self._id = str(id)
+        self._hash = str(hash)
         self._levels = None
 
         if data:
             self.parse(data)
 
     def parse(self, data):
-        self._id = str(data["id"])
-        self._hash = str(data["hash"])
         self._levels = list(Level(self._client, self, data["levels"][i]["id"], data["levels"][i]["hash"]) for i in range(len(data["levels"])))
         if "bonus_level" in data:
             self._levels.append(Level(self._client, self, data["bonus_level"]["id"], data["bonus_level"]["hash"]))
@@ -102,8 +104,11 @@ class Chapter:
     def get_map(self):
         return self._map
 
+    def get_is_inited(self):
+        return bool(self._levels)
+
     def get_is_loaded(self):
-        if not self._levels:
+        if not self.get_is_inited():
             return False
         for i in range(len(self._levels)):
             if not self._levels[i].get_is_loaded():
@@ -142,6 +147,7 @@ class Chapter:
     id = property(get_id)
     hash = property(get_hash)
     is_loaded = property(get_is_loaded)
+    is_inited = property(get_is_inited)
 
     map = property(get_map)
     locks = property(get_locks_count)
@@ -158,14 +164,17 @@ class Map:
             self.parse(data)
 
     def parse(self, data):
-        self._chapters = list(Chapter(self._client, self, data[i]) for i in range(len(data)))
+        self._chapters = list(Chapter(self._client, self, data[i]["id"], data[i]["hash"], data[i]) for i in range(len(data)))
 
     def load(self, separately=False):
         for i in range(len(self._chapters)):
             self._chapters[i].load(separately)
 
+    def get_is_inited(self):
+        return bool(self._chapters)
+
     def get_is_loaded(self):
-        if not self._chapters:
+        if not self.get_is_inited():
             return False
         for i in range(len(self._chapters)):
             if not self._chapters[i].get_is_loaded():
@@ -197,4 +206,5 @@ class Map:
         return None
 
     is_loaded = property(get_is_loaded)
+    is_inited = property(get_is_inited)
 

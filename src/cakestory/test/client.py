@@ -7,44 +7,44 @@ import map
 
 class ClientState:
     def __init__(self, client):
-        self.client = client
-        self.data = None
+        self._client = client
+        self._data = None
 
     def load(self):
-        self.merge(net.send(command.GetState(self.client.session)))
+        self.merge(net.send(command.GetState(self._client.session)))
 
     def merge(self, data):
-        if self.data:
-            utils.merge_objects(self.data, data)
+        if self._data:
+            utils.merge_objects(self._data, data)
         else:
-            self.data = data
+            self._data = data
 
     def get_is_loaded(self):
-        return bool(self.data)
+        return bool(self._data)
 
     def get_user_id(self):
         if not self.get_is_loaded() : self.load()
-        return self.data["user_data"]["user_id"]
+        return self._data["user_data"]["user_id"]
 
     def get_progress(self):
         if not self.get_is_loaded() : self.load()
-        return self.data["user_data"]["progress"]
+        return self._data["user_data"]["progress"]
 
     def get_real_balance(self):
         if not self.get_is_loaded() : self.load()
-        return self.data["user_data"]["real_balance"]
+        return self._data["user_data"]["real_balance"]
 
     def get_game_balance(self):
         if not self.get_is_loaded() : self.load()
-        return self.data["user_data"]["game_balance"]
+        return self._data["user_data"]["game_balance"]
 
     def get_chapters(self):
         if not self.get_is_loaded() : self.load()
-        return self.data["user_data"]["chapters"]
+        return self._data["user_data"]["chapters"]
 
     def get_defs_hash(self):
         if not self.get_is_loaded() : self.load()
-        return self.data["defs_hash"]
+        return self._data["defs_hash"]
 
     is_loaded = property(get_is_loaded)
 
@@ -59,28 +59,28 @@ class ClientState:
 
 class ClientDefs:
     def __init__(self, client):
-        self.client = client
-        self.data = None
+        self._client = client
+        self._data = None
 
     def load(self):
-        self.merge(net.send(command.GetDefs(self.client.state.defs_hash)))
+        self.merge(net.send(command.GetDefs(self._client.state.defs_hash)))
 
     def merge(self, data):
-        if self.data:
-            utils.merge_objects(self.data, data)
+        if self._data:
+            utils.merge_objects(self._data, data)
         else:
-            self.data = data
+            self._data = data
 
     def get_is_loaded(self):
-        return bool(self.data)
+        return bool(self._data)
 
     def get_mapscreen(self):
         if not self.get_is_loaded() : self.load()
-        return self.data["mapscreen"]["chapters"]
+        return self._data["mapscreen"]["chapters"]
 
     def get_chapters(self):
         if not self.get_is_loaded() : self.load()
-        return self.data["chapters"]
+        return self._data["chapters"]
 
     is_loaded = property(get_is_loaded)
 
@@ -98,22 +98,22 @@ class Client:
         return sha.hexdigest()
 
     def __init__(self):
-        self.network = None
-        self.uid = None
-        self.token = None
-        self.session = None
+        self._network = None
+        self._uid = None
+        self._token = None
+        self._session = None
 
-        self.state = ClientState(self)
-        self.defs = ClientDefs(self)
-        self.map = map.Map(self)
+        self._state = ClientState(self)
+        self._defs = ClientDefs(self)
+        self._map = map.Map(self)
 
     def get_auth_info(self):
-        if not self.network or not self.uid or not self.token:
+        if not self._network or not self._uid or not self._token:
             return None
         return {
-            "network_code": self.network,
-            "network_id": self.uid,
-            "access_token": self.token
+            "network_code": self._network,
+            "network_id": self._uid,
+            "access_token": self._token
         }
 
     def session_get(self, network=None, uid=None, token=None, auth=None):
@@ -124,27 +124,48 @@ class Client:
         if not token:
             token = Client.get_access_token(network, uid, Client.DEVICE_TOKEN)
 
-        self.network = network
-        self.uid = uid
-        self.token = token
+        self._network = network
+        self._uid = uid
+        self._token = token
 
         rsp = net.send(command.SessionGet(network, uid, token, auth))
-        self.session = rsp["session"]
+        self._session = rsp["session"]
 
     def session_update(self, auth=None):
-        rsp = net.send(command.SessionUpdate(self.session, auth))
-        self.session = rsp["session"]
+        rsp = net.send(command.SessionUpdate(self._session, auth))
+        self._session = rsp["session"]
 
     def init(self, network=None, uid=None, token=None, auth=None):
         self.session_get(network, uid, token, auth)
-        self.state.load()
-        self.defs.load()
-        self.map.parse(self.defs.mapscreen)
+        self._state.load()
+        self._defs.load()
+        self._map.parse(self._defs.mapscreen)
 
     def join(self, client, network=None, uid=None, token=None):
-        if not self.session:
+        if not self._session:
             self.init(network, uid, token, client.get_auth_info())
         else:
             self.session_update(client.get_auth_info())
-            self.state.load()
+            self._state.load()
+
+    def get_session(self):
+        if not self._session : self.session_get()
+        return self._session
+
+    def get_state(self):
+        if not self._state.get_is_loaded() : self._state.load()
+        return self._state
+
+    def get_defs(self):
+        if not self._defs.get_is_loaded() : self._defs.load()
+        return self._defs
+
+    def get_map(self):
+        if not self._map.get_is_inited() : self._map.parse(self.get_defs().mapscreen)
+        return self._map
+
+    session = property(get_session)
+    state = property(get_state)
+    defs = property(get_defs)
+    map = property(get_map)
 

@@ -80,6 +80,8 @@ class Connection:
             return self.send_post(command)
         elif command.method == RequestMethod.GET:
             return self.send_get(command)
+        else:
+            raise RuntimeError("Unknown request method '%s'." % command.method)
 
 
 __connection = None
