@@ -28,15 +28,15 @@ class ClientState:
 
     def get_progress(self):
         if not self.get_is_loaded() : self.load()
-        return self.__data["user_data"]["progress"]
+        return int(self.__data["user_data"]["progress"])
 
     def get_real_balance(self):
         if not self.get_is_loaded() : self.load()
-        return self.__data["user_data"]["real_balance"]
+        return int(self.__data["user_data"]["real_balance"])
 
     def get_game_balance(self):
         if not self.get_is_loaded() : self.load()
-        return self.__data["user_data"]["game_balance"]
+        return int(self.__data["user_data"]["game_balance"])
 
     def get_chapters(self):
         if not self.get_is_loaded() : self.load()
