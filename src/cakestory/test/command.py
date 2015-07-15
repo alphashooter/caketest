@@ -50,4 +50,31 @@ class GetChapter(ServerCommand):
 
 class QueryLevels(ServerCommand):
     def __init__(self, session, levels):
-        ServerCommand.__init__(self, "/query/levels", {"session": session, "levels": levels}, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/query/levels", {"session": session, "levels": levels[:]}, net.RequestMethod.POST)
+
+class QueryUsers(ServerCommand):
+    def __init__(self, session, network, nids):
+        credentials = dict()
+        credentials[network] = nids[:]
+
+        ServerCommand.__init__(
+            self,
+            "/query/users",
+            {
+                "session": session,
+                "credentials": credentials
+            },
+            net.RequestMethod.POST
+        )
+
+class QueryUsersProgress(ServerCommand):
+    def __init__(self, session, uids):
+        ServerCommand.__init__(
+            self,
+            "/query/users/progress",
+            {
+                "session": session,
+                "users": uids[:]
+            },
+            net.RequestMethod.POST
+        )

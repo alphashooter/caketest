@@ -5,6 +5,10 @@ import command
 import map
 
 
+class Network:
+    DEVICE = "device"
+    FB = "FB"
+
 class ClientState:
     def __init__(self, client):
         self.__client = client
@@ -89,67 +93,80 @@ class ClientDefs:
 
 
 class Client:
-    DEVICE_TOKEN = "gFdsrte55UIEEWgsggagtq998joOQ"
+    __DEVICE_TOKEN = "gFdsrte55UIEEWgsggagtq998joOQ"
 
     @staticmethod
-    def get_access_token(network, uid, token):
+    def __generate_access_token(network, uid):
         sha = hashlib.sha1()
-        sha.update("%s_%s_%s" % (network, uid, token))
+        sha.update("%s_%s_%s" % (network, uid, Client.__DEVICE_TOKEN))
         return sha.hexdigest()
 
     def __init__(self):
-        self.__network = None
-        self.__uid = None
-        self.__token = None
+        self.__info = dict()
         self.__session = None
 
         self.__state = ClientState(self)
         self.__defs = ClientDefs(self)
         self.__map = map.Map(self)
 
-    def get_auth_info(self):
-        if not self.__network or not self.__uid or not self.__token:
-            return None
-        return {
-            "network_code": self.__network,
-            "network_id": self.__uid,
-            "access_token": self.__token
+    def __session_get(self, network=None, nid=None, token=None, auth=None):
+        if not network:
+            network = Network.DEVICE
+        if not nid:
+            nid = utils.random_string(0x20, "0123456789abcdef")
+        if not token:
+            token = Client.__generate_access_token(network, nid)
+
+        self.__info[network] = {
+            "network_code": str(network),
+            "network_id": str(nid),
+            "access_token": str(token)
         }
 
-    def session_get(self, network=None, uid=None, token=None, auth=None):
-        if not network:
-            network = "device"
-        if not uid:
-            uid = utils.random_string(0x20, "0123456789abcdef")
-        if not token:
-            token = Client.get_access_token(network, uid, Client.DEVICE_TOKEN)
+        if auth is not None:
+            self.__info[auth["network_code"]] = auth.copy()
 
-        self.__network = network
-        self.__uid = uid
-        self.__token = token
-
-        rsp = net.send(command.SessionGet(network, uid, token, auth))
+        rsp = net.send(command.SessionGet(network, nid, token, auth))
         self.__session = rsp["session"]
 
-    def session_update(self, auth=None):
+    def __session_update(self, auth=None):
+        if auth is not None:
+            self.__info[auth["network_code"]] = auth.copy()
         rsp = net.send(command.SessionUpdate(self.__session, auth))
         self.__session = rsp["session"]
 
-    def init(self, network=None, uid=None, token=None, auth=None):
-        self.session_get(network, uid, token, auth)
-        self.__state.load()
-        self.__defs.load()
-        self.__map.parse(self.__defs.mapscreen)
+    def get_auth_info(self, network):
+        if not network in self.__info:
+            return None
+        return self.__info[network].copy()
 
-    def join(self, client, network=None, uid=None, token=None):
+    def get_network_id(self, network):
+        if not network in self.__info:
+            return None
+        return self.__info[network]["network_id"]
+
+    def get_access_token(self, network):
+        if not network in self.__info:
+            return None
+        return self.__info[network]["access_token"]
+
+    def init(self, network=None, nid=None, token=None, auth=None):
+        self.__session_get(network, nid, token, auth)
+
+    def join(self, network=None, nid=None, token=None):
         if not self.__session:
-            self.init(network, uid, token, client.get_auth_info())
-        else:
-            self.session_update(client.get_auth_info())
-            self.__state.load()
+            self.init()
+        self.__session_update(
+            {
+                "network_code": str(network),
+                "network_id": str(nid),
+                "access_token": str(token)
+            }
+        )
+        self.__state.load()
 
     def get_session(self):
-        if not self.__session : self.session_get()
+        if not self.__session : self.__session_get()
         return self.__session
 
     def get_state(self):
