@@ -4,11 +4,21 @@ import command
 
 
 class Level:
-    def __init__(self, client, chapter, id, hash, data=None):
+    def __init__(self, client, chapter, id, hash, bonus=False, data=None):
         self._client = client
         self._chapter = chapter
 
-        self._id = str(id)
+        self._id = None
+        self._qid = None
+        self._bonus = bool(bonus)
+
+        if self._bonus:
+            self._id = int(re.match(r"bonus_(\d+)", str(id)).group(1))
+            self._qid = str(id)
+        else:
+            self._id = int(id)
+            self._qid = str(id)
+
         self._hash = str(hash)
         self._data = None
 
@@ -24,6 +34,9 @@ class Level:
     def get_id(self):
         return self._id
 
+    def get_qualified_id(self):
+        return self._qid
+
     def get_hash(self):
         return self._hash
 
@@ -33,17 +46,69 @@ class Level:
     def get_map(self):
         return self._chapter.get_map()
 
+    def get_next(self):
+        if self.get_is_last():
+            return None
+
+        id = self.get_id()
+        while True:
+            id += 1
+            level = self.get_map().get_level(id)
+            if level : return level
+
+    def get_next_in_chapter(self):
+        if self.get_is_last_in_chapter():
+            return None
+
+        id = self.get_id()
+        while True:
+            id += 1
+            level = self.get_map().get_level(id)
+            if level : return level
+
+    def get_prev(self):
+        if self.get_is_first():
+            return None
+
+        id = self.get_id()
+        while True:
+            id -= 1
+            level = self.get_map().get_level(id)
+            if level : return level
+
+    def get_prev_in_chapter(self):
+        if self.get_is_first_in_chapter():
+            return None
+
+        id = self.get_id()
+        while True:
+            id -= 1
+            level = self.get_map().get_level(id)
+            if level : return level
+
+    def get_is_last(self):
+        return self.get_id() == self.get_map().get_level_last().get_id()
+
+    def get_is_first(self):
+        return self.get_id() == self.get_map().get_level_first().get_id()
+
+    def get_is_last_in_chapter(self):
+        return self.get_id() == self.get_chapter().get_level_last().get_id()
+
+    def get_is_first_in_chapter(self):
+        return self.get_id() == self.get_chapter().get_level_first().get_id()
+
     def get_is_inited(self):
         return True
 
     def get_is_loaded(self):
-        return bool(self._data)
+        return self._data is not None
 
     def get_is_bonus(self):
-        return bool(re.search(r"bonus_\d+", self._id))
+        return self._bonus
 
     def get_user_score(self):
-        rsp = net.Connection.instance.send_post(command.QueryLevels(self._client.session, [self._id]))
+        rsp = net.send(command.QueryLevels(self._client.session, [self.get_qualified_id()]))
         if self._id in rsp:
             return rsp[self._id]
         else:
@@ -61,12 +126,24 @@ class Level:
         return self._data["scores"][num - 1]
 
     id = property(get_id)
+    qualified_id = property(get_qualified_id)
     hash = property(get_hash)
     is_loaded = property(get_is_loaded)
     is_inited = property(get_is_inited)
 
     chapter = property(get_chapter)
     map = property(get_map)
+
+    next = property(get_next)
+    prev = property(get_prev)
+    next_in_chapter = property(get_next_in_chapter)
+    prev_in_chapter = property(get_prev_in_chapter)
+
+    is_first = property(get_is_first)
+    is_last = property(get_is_last)
+    is_first_in_chapter = property(get_is_first_in_chapter)
+    is_last_in_chapter = property(get_is_last_in_chapter)
+
     is_bonus = property(get_is_bonus)
 
 class Chapter:
@@ -74,17 +151,20 @@ class Chapter:
         self._client = client
         self._map = map
 
-        self._id = str(id)
+        self._id = int(id)
+        self._qid = str(id)
         self._hash = str(hash)
         self._levels = None
+        self._bonus = None
 
         if data:
             self.parse(data)
 
     def parse(self, data):
         self._levels = list(Level(self._client, self, data["levels"][i]["id"], data["levels"][i]["hash"]) for i in range(len(data["levels"])))
+        self._bonus = []
         if "bonus_level" in data:
-            self._levels.append(Level(self._client, self, data["bonus_level"]["id"], data["bonus_level"]["hash"]))
+            self._bonus.append(Level(self._client, self, data["bonus_level"]["id"], data["bonus_level"]["hash"], True))
 
     def load(self, separately=False):
         if separately:
@@ -98,14 +178,43 @@ class Chapter:
     def get_id(self):
         return self._id
 
+    def get_qualified_id(self):
+        return self._qid
+
     def get_hash(self):
         return self._hash
 
     def get_map(self):
         return self._map
 
+    def get_next(self):
+        if self.get_is_last():
+            return None
+
+        id = self.get_id()
+        while True:
+            id += 1
+            chapter = self.get_map().get_chapter(id)
+            if chapter : return chapter
+
+    def get_prev(self):
+        if self.get_is_first():
+            return None
+
+        id = self.get_id()
+        while True:
+            id -= 1
+            chapter = self.get_map().get_chapter(id)
+            if chapter : return chapter
+
+    def get_is_first(self):
+        return self.get_id() == self.get_map().get_chapter_first().get_id()
+
+    def get_is_last(self):
+        return self.get_id() == self.get_map().get_chapter_last().get_id()
+
     def get_is_inited(self):
-        return bool(self._levels)
+        return self._levels is not None and self._bonus is not None
 
     def get_is_loaded(self):
         if not self.get_is_inited():
@@ -117,14 +226,36 @@ class Chapter:
 
     def get_level_by_hash(self, hash):
         for i in range(len(self._levels)):
-            if self._levels[i].hash == str(hash):
+            if self._levels[i].get_hash() == str(hash):
+                return self._levels[i]
+        for i in range(len(self._bonus)):
+            if self._bonus[i].get_hash() == str(hash):
                 return self._levels[i]
         return None
 
     def get_level(self, id):
         for i in range(len(self._levels)):
-            if self._levels[i].id == str(id):
+            if str(self._levels[i].get_id()) == str(id) or self._levels[i].get_qualified_id() == str(id):
                 return self._levels[i]
+        return None
+
+    def get_level_first(self):
+        ids = sorted(list(self._levels[i].get_id() for i in range(len(self._levels))))
+        return self.get_level(ids[0])
+
+    def get_level_last(self):
+        ids = sorted(list(self._levels[i].get_id() for i in range(len(self._levels))))
+        return self.get_level(ids[len(ids) - 1])
+
+    def get_levels(self):
+        return self._levels[:]
+
+    def get_bonus_level(self, id=None):
+        if not id :
+            id = self.get_id()
+        for i in range(len(self._bonus)):
+            if str(self._bonus[i].get_id()) == str(id) or self._bonus[i].get_qualified_id() == str(id):
+                return self._bonus[i]
         return None
 
     def get_unlocks(self):
@@ -145,11 +276,21 @@ class Chapter:
         return not self.get_is_locked()
 
     id = property(get_id)
+    qualified_id = property(get_qualified_id)
     hash = property(get_hash)
     is_loaded = property(get_is_loaded)
     is_inited = property(get_is_inited)
 
     map = property(get_map)
+
+    next = property(get_next)
+    prev = property(get_prev)
+    is_first = property(get_is_first)
+    is_last = property(get_is_last)
+
+    first_level = property(get_level_first)
+    last_level = property(get_level_last)
+
     locks = property(get_locks_count)
     unlocks = property(get_unlocks_count)
     is_locked = property(get_is_locked)
@@ -183,15 +324,26 @@ class Map:
 
     def get_chapter_by_hash(self, hash):
         for i in range(len(self._chapters)):
-            if self._chapters[i].hash == str(hash):
+            if self._chapters[i].get_hash() == str(hash):
                 return self._chapters[i]
         return None
 
     def get_chapter(self, id):
         for i in range(len(self._chapters)):
-            if self._chapters[i].id == str(id):
+            if str(self._chapters[i].get_id()) == str(id) or str(self._chapters[i].get_qualified_id()) == str(id):
                 return self._chapters[i]
         return None
+
+    def get_chapter_first(self):
+        ids = sorted(list(self._chapters[i].get_id() for i in range(len(self._chapters))))
+        return self.get_chapter(ids[0])
+
+    def get_chapter_last(self):
+        ids = sorted(list(self._chapters[i].get_id() for i in range(len(self._chapters))))
+        return self.get_chapter(ids[len(ids) - 1])
+
+    def get_chapters(self):
+        return self._chapters[:]
 
     def get_level_by_hash(self, hash):
         for i in range(len(self._chapters)):
@@ -205,6 +357,29 @@ class Map:
             if level: return level
         return None
 
+    def get_level_first(self):
+        return self.get_chapter_first().get_level_first()
+
+    def get_level_last(self):
+        return self.get_chapter_last().get_level_last()
+
+    def get_levels(self):
+        chapters = self.get_chapters()
+        levels = list()
+        for i in range(len(chapters)):
+            levels += chapters[i].get_levels()
+        return levels
+
+    def get_bonus_level(self, id):
+        for i in range(len(self._chapters)):
+            level = self._chapters[i].get_bonus_level(id)
+            if level: return level
+        return None
+
     is_loaded = property(get_is_loaded)
     is_inited = property(get_is_inited)
 
+    first_chapter = property(get_chapter_first)
+    last_chapter = property(get_chapter_last)
+    first_level = property(get_level_first)
+    last_level = property(get_level_last)

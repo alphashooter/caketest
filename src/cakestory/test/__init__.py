@@ -1,4 +1,4 @@
 from client import *
-from command import *
-from map import *
-from net import *
+import net
+import command
+import map
