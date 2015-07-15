@@ -55,13 +55,13 @@ class Chapter:
 
     def get_level_by_hash(self, hash):
         for i in range(len(self.levels)):
-            if self.levels[i].hash == hash:
+            if self.levels[i].hash == str(hash):
                 return self.levels[i]
         return None
 
     def get_level_by_id(self, id):
         for i in range(len(self.levels)):
-            if self.levels[i].id == id:
+            if self.levels[i].id == str(id):
                 return self.levels[i]
         return None
 
@@ -103,3 +103,43 @@ class Chapter:
     is_locked = property(get_is_locked)
     is_unlocked = property(get_is_unlocked)
 
+
+class Map:
+    def __init__(self, client, data=None):
+        self.client = client
+        self.chapters = None
+        if data:
+            self.parse(data)
+
+    def get_chapter_by_hash(self, hash):
+        for i in range(len(self.chapters)):
+            if self.chapters[i].hash == str(hash):
+                return self.chapters[i]
+        return None
+
+    def get_chapter_by_id(self, id):
+        for i in range(len(self.chapters)):
+            if self.chapters[i].id == str(id):
+                return self.chapters[i]
+        return None
+
+    def get_level_by_hash(self, hash):
+        for i in range(len(self.chapters)):
+            level = self.chapters[i].get_level_by_hash(hash)
+            if level:
+                return level
+        return None
+
+    def get_level_by_id(self, id):
+        for i in range(len(self.chapters)):
+            level = self.chapters[i].get_level_by_id(id)
+            if level:
+                return level
+        return None
+
+    def parse(self, data):
+        self.chapters = list(Chapter(self.client, data[i]) for i in range(len(data)))
+
+    def load(self, separately=False):
+        for i in range(len(self.chapters)):
+            self.chapters[i].load()

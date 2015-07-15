@@ -75,7 +75,7 @@ class Client:
 
         self.state = ClientState()
         self.defs = ClientDefs()
-        self.chapters = None
+        self.map = map.Map(self)
 
     def get_info(self):
         if not self.network or not self.uid or not self.token:
@@ -111,10 +111,10 @@ class Client:
     def defs_update(self):
         self.defs.load(self.state.defs_hash)
 
-    def chapters_update(self):
-        self.chapters = list(map.Chapter(self, self.defs.mapscreen[i]) for i in range(len(self.defs.mapscreen)))
-        for i in range(len(self.chapters)):
-            self.chapters[i].load()
+    def chapters_update(self, autoload=True):
+        self.map.parse(self.defs.mapscreen)
+        if autoload:
+            self.map.load()
 
     def init(self, network=None, uid=None, token=None, auth=None):
         self.session_get(network, uid, token, auth)
