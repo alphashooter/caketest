@@ -1,13 +1,13 @@
 import net
 
-class Command:
+class ServerCommand:
     def __init__(self, name, data=None, method=net.RequestMethod.POST):
         self.name = name
         self.data = data
         self.method = method
 
 
-class SessionGet(Command):
+class SessionGet(ServerCommand):
     def __init__(self, network, uid, token, auth=None):
         data = {
             "client_network": {
@@ -18,36 +18,36 @@ class SessionGet(Command):
         }
         if auth:
             data["auth_network"] = auth
-        Command.__init__(self, "/session/get", data, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/session/get", data, net.RequestMethod.POST)
 
 
-class SessionUpdate(Command):
+class SessionUpdate(ServerCommand):
     def __init__(self, session, auth=None):
         data = {"session": session}
         if auth:
             data["auth_network"] = auth
-        Command.__init__(self, "/session/update", data, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/session/update", data, net.RequestMethod.POST)
 
 
-class GetState(Command):
+class GetState(ServerCommand):
     def __init__(self, session):
-        Command.__init__(self, "/init", {"session": session}, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/init", {"session": session}, net.RequestMethod.POST)
 
 
-class GetDefs(Command):
+class GetDefs(ServerCommand):
     def __init__(self, hash):
-        Command.__init__(self, "/defs", {"hash": hash}, net.RequestMethod.GET)
+        ServerCommand.__init__(self, "/defs", {"hash": hash}, net.RequestMethod.GET)
 
 
-class GetLevel(Command):
+class GetLevel(ServerCommand):
     def __init__(self, hash):
-        Command.__init__(self, "/map/level", {"hash": hash}, net.RequestMethod.GET)
+        ServerCommand.__init__(self, "/map/level", {"hash": hash}, net.RequestMethod.GET)
 
 
-class GetChapter(Command):
+class GetChapter(ServerCommand):
     def __init__(self, hash):
-        Command.__init__(self, "/map/chapter", {"hash": hash}, net.RequestMethod.GET)
+        ServerCommand.__init__(self, "/map/chapter", {"hash": hash}, net.RequestMethod.GET)
 
-class QueryLevels(Command):
+class QueryLevels(ServerCommand):
     def __init__(self, session, levels):
-        Command.__init__(self, "/query/levels", {"session": session, "levels": levels}, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/query/levels", {"session": session, "levels": levels}, net.RequestMethod.POST)
