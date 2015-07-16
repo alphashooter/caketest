@@ -189,7 +189,13 @@ class FinishLevelCommand(ExecuteCommand):
         if used_lives is not None:
             params["used_lives"] = int(used_lives)
         if used_boosters is not None:
-            params["used_boosters"] = utils.sdict(used_boosters)
+            if isinstance(used_boosters, list):
+                used_boosters_map = dict()
+                for i in range(len(used_boosters)):
+                    used_boosters_map[used_boosters[i]] = used_boosters_map[used_boosters[i]] + 1 if used_boosters[i] in used_boosters_map else 1
+                params["used_boosters"] = used_boosters_map
+            else:
+                params["used_boosters"] = utils.sdict(used_boosters)
 
         ExecuteCommand.__init__(self, client, "finish_level", params)
 
@@ -207,6 +213,8 @@ class LoseLevelCommand(ExecuteCommand):
         if used_boosters is None:
             used_boosters = 0
         elif isinstance(used_boosters, dict):
+            used_boosters = int( sum(used_boosters.values()) )
+        elif isinstance(used_boosters, list):
             used_boosters = len(used_boosters)
         else:
             used_boosters = int(used_boosters)

@@ -64,6 +64,16 @@ class Level:
         net.send(cmd)
         return not cmd.rejected
 
+    def lose(self, completion=None, used_boosters=None):
+        if completion is None:
+            completion = None
+        if used_boosters is None:
+            used_boosters = 0
+
+        cmd = command.LoseLevelCommand(self.__client, self.qualified_id, completion, used_boosters)
+        net.send(cmd)
+        return not cmd.rejected
+
     def get_id(self):
         return self.__id
 
