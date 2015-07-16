@@ -51,6 +51,7 @@ class Target:
     - Target.TOYS -- for levels with free-toys target
     - Target.MINE -- for bonus levels
     """
+
     __VALUES = ["score", "clearbacks", "get_ingredients", "get_colors", "glass", "toys"]
 
     SCORE = None
@@ -85,6 +86,16 @@ Target.MINE = Target("glass")
 
 
 class Star:
+    """
+    An enumeration containing values corresponding to score stars in level.
+
+    Possible values are held in static variables:
+
+    - Star.FIRST -- for first star
+    - Star.SECOND -- for second star
+    - Star.THIRD -- for third star
+    """
+
     __VALUES = [1, 2, 3]
 
     FIRST = None
@@ -101,10 +112,10 @@ class Star:
         return self.value
 
     def __coerce__(self, other):
-        return (int(self), other)
+        return (self.value, other)
 
     def __cmp__(self, other):
-        return int(self) - int(other)
+        return self.value - int(other)
 
 
 Star.FIRST = Star(1)
