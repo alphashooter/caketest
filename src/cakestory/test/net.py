@@ -1,6 +1,7 @@
 import httplib
 import hashlib
 import json
+import utils
 
 class RequestMethod:
     POST = "POST"
@@ -47,7 +48,7 @@ class Connection:
 
         print "Server response\n" \
               "Data:    %s\n" % data
-        return json.loads(data)
+        return utils.sdict(json.loads(data))
 
     def send_get(self, command):
         data = command.data
@@ -71,7 +72,7 @@ class Connection:
 
         print "Server response\n" \
               "Data:    %s\n" % data
-        return json.loads(data)
+        return utils.sdict(json.loads(data))
 
     def send(self, command):
         if command.method == RequestMethod.POST:
