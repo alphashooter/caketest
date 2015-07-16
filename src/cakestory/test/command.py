@@ -78,3 +78,16 @@ class QueryUsersProgress(ServerCommand):
             },
             net.RequestMethod.POST
         )
+
+class QueryUsersLevels(ServerCommand):
+    def __init__(self, session, levels, uids):
+        ServerCommand.__init__(
+            self,
+            "/query/users/progress",
+            {
+                "session": session,
+                "levels": levels[:],
+                "users": uids[:]
+            },
+            net.RequestMethod.POST
+        )
