@@ -126,13 +126,26 @@ class Client:
         return sha.hexdigest()
 
     def __init__(self):
-        self.__info = dict()
+        self.__info = list()
         self.__session = None
         self.__next_command = 0
 
         self.__state = ClientState(self)
         self.__defs = ClientDefs(self)
         self.__map = map.Map(self)
+
+    def __add_network(self, info):
+        if self.__has_network(info.network):
+            raise RuntimeError("Network is already added.")
+        self.__info.append(info.copy())
+
+    def __get_network(self, network):
+        for i in range(len(self.__info)):
+            if self.__info[i].network == str(network):
+                return self.__info[i]
+
+    def __has_network(self, network):
+        return self.__get_network(network) is not None
 
     def __session_get(self, network=None, nid=None, token=None, auth=None):
         if not network:
@@ -142,34 +155,45 @@ class Client:
         if not token:
             token = Client.__generate_access_token(network, nid)
 
-        self.__info[network] = ClientInfo(network, nid, token)
+        self.__add_network(ClientInfo(network, nid, token))
 
         if auth is not None:
-            self.__info[auth.network] = auth.copy()
+            self.__add_network(auth)
 
         rsp = net.send(command.SessionGet(ClientInfo(network, nid, token), auth))
         self.__session = rsp["session"]
 
     def __session_update(self, auth=None):
         if auth is not None:
-            self.__info[auth.network] = auth.copy()
+            self.__add_network(auth)
         rsp = net.send(command.SessionUpdate(self.__session, auth))
         self.__session = rsp["session"]
 
-    def get_auth_info(self, network):
-        if not network in self.__info:
-            return None
-        return self.__info[network]
+    def get_auth_info(self, network=None):
+        if not network:
+            if len(self.__info) > 0:
+                return self.__info[0]
+            else:
+                return 0
+        return self.__get_network(network)
 
-    def get_network_id(self, network):
-        if not network in self.__info:
-            return None
-        return self.__info[network].network_id
+    def get_network(self, network=None):
+        info = self.get_auth_info(network)
+        if info is not None:
+            return info.network
+        return None
 
-    def get_access_token(self, network):
-        if not network in self.__info:
-            return None
-        return self.__info[network].access_token
+    def get_network_id(self, network=None):
+        info = self.get_auth_info(network)
+        if info is not None:
+            return info.network_id
+        return None
+
+    def get_access_token(self, network=None):
+        info = self.get_auth_info(network)
+        if info is not None:
+            return info.access_token
+        return None
 
     def init(self, network=None, nid=None, token=None, auth=None):
         self.__session_get(network, nid, token, auth)
@@ -210,8 +234,12 @@ class Client:
         if not self.__map.get_is_inited() : self.__map.parse(self.get_defs().mapscreen)
         return self.__map
 
+    network = property(get_network)
+    network_id = property(get_network_id)
+    access_token = property(get_access_token)
     session = property(get_session)
     next_command = property(get_next_command)
+
     state = property(get_state)
     defs = property(get_defs)
     map = property(get_map)
