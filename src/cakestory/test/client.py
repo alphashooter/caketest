@@ -27,27 +27,27 @@ class ClientState:
         return bool(self.__data)
 
     def get_user_id(self):
-        if not self.get_is_loaded() : self.load()
+        if not self.is_loaded : self.load()
         return self.__data["user_data"]["user_id"]
 
     def get_progress(self):
-        if not self.get_is_loaded() : self.load()
+        if not self.is_loaded : self.load()
         return int(self.__data["user_data"]["progress"])
 
     def get_real_balance(self):
-        if not self.get_is_loaded() : self.load()
+        if not self.is_loaded : self.load()
         return int(self.__data["user_data"]["real_balance"])
 
     def get_game_balance(self):
-        if not self.get_is_loaded() : self.load()
+        if not self.is_loaded : self.load()
         return int(self.__data["user_data"]["game_balance"])
 
     def get_chapters(self):
-        if not self.get_is_loaded() : self.load()
+        if not self.is_loaded : self.load()
         return self.__data["user_data"]["chapters"]
 
     def get_defs_hash(self):
-        if not self.get_is_loaded() : self.load()
+        if not self.is_loaded : self.load()
         return self.__data["defs_hash"]
 
     is_loaded = property(get_is_loaded)
@@ -79,11 +79,11 @@ class ClientDefs:
         return bool(self.__data)
 
     def get_mapscreen(self):
-        if not self.get_is_loaded() : self.load()
+        if not self.is_loaded : self.load()
         return self.__data["mapscreen"]["chapters"]
 
     def get_chapters(self):
-        if not self.get_is_loaded() : self.load()
+        if not self.is_loaded : self.load()
         return self.__data["chapters"]
 
     is_loaded = property(get_is_loaded)
