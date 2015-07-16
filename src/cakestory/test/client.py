@@ -9,6 +9,30 @@ class Network:
     DEVICE = "device"
     FB = "FB"
 
+
+class ClientInfo:
+    def __init__(self, network, nid, token):
+        self.__network = network
+        self.__nid = nid
+        self.__token = token
+
+    def copy(self):
+        return ClientInfo(self.network, self.network_id, self.access_token)
+
+    def get_network(self):
+        return self.__network
+
+    def get_network_id(self):
+        return self.__nid
+
+    def get_access_token(self):
+        return self.__token
+
+    network = property(get_network)
+    network_id = property(get_network_id)
+    access_token = property(get_access_token)
+
+
 class ClientState:
     def __init__(self, client):
         self.__client = client
@@ -117,38 +141,34 @@ class Client:
         if not token:
             token = Client.__generate_access_token(network, nid)
 
-        self.__info[network] = {
-            "network_code": str(network),
-            "network_id": str(nid),
-            "access_token": str(token)
-        }
+        self.__info[network] = ClientInfo(network, nid, token)
 
         if auth is not None:
-            self.__info[auth["network_code"]] = auth.copy()
+            self.__info[auth.network] = auth.copy()
 
-        rsp = net.send(command.SessionGet(network, nid, token, auth))
+        rsp = net.send(command.SessionGet(ClientInfo(network, nid, token), auth))
         self.__session = rsp["session"]
 
     def __session_update(self, auth=None):
         if auth is not None:
-            self.__info[auth["network_code"]] = auth.copy()
+            self.__info[auth.network] = auth.copy()
         rsp = net.send(command.SessionUpdate(self.__session, auth))
         self.__session = rsp["session"]
 
     def get_auth_info(self, network):
         if not network in self.__info:
             return None
-        return self.__info[network].copy()
+        return self.__info[network]
 
     def get_network_id(self, network):
         if not network in self.__info:
             return None
-        return self.__info[network]["network_id"]
+        return self.__info[network].network_id
 
     def get_access_token(self, network):
         if not network in self.__info:
             return None
-        return self.__info[network]["access_token"]
+        return self.__info[network].access_token
 
     def init(self, network=None, nid=None, token=None, auth=None):
         self.__session_get(network, nid, token, auth)

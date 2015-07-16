@@ -8,16 +8,20 @@ class ServerCommand:
 
 
 class SessionGet(ServerCommand):
-    def __init__(self, network, uid, token, auth=None):
+    def __init__(self, info, auth=None):
         data = {
             "client_network": {
-                "network_code": network,
-                "network_id": uid,
-                "access_token": token
+                "network_code": info.network,
+                "network_id": info.network_id,
+                "access_token": info.access_token
             }
         }
         if auth:
-            data["auth_network"] = auth
+            data["auth_network"] = {
+                "network_code": auth.network,
+                "network_id": auth.network_id,
+                "access_token": auth.access_token
+            }
         ServerCommand.__init__(self, "/session/get", data, net.RequestMethod.POST)
 
 
@@ -25,7 +29,11 @@ class SessionUpdate(ServerCommand):
     def __init__(self, session, auth=None):
         data = {"session": session}
         if auth:
-            data["auth_network"] = auth
+            data["auth_network"] = {
+                "network_code": auth.network,
+                "network_id": auth.network_id,
+                "access_token": auth.access_token
+            }
         ServerCommand.__init__(self, "/session/update", data, net.RequestMethod.POST)
 
 
