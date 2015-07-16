@@ -16,19 +16,19 @@ class Friend:
 
     def get_user_id(self):
         if self.__uid is None:
-            rsp = net.send(command.QueryUsers(self.__client.session, self.__network, [self.__nid]))
-            if self.__network in rsp and self.__nid in rsp[self.__network]:
-                self.__uid = int(rsp[self.__network][self.__nid])
+            rsp = net.send(command.QueryUsers(self.__client.session, self.network, [self.network_id]))
+            if self.network in rsp and self.network_id in rsp[self.network]:
+                self.__uid = int(rsp[self.network][self.network_id])
         return self.__uid
 
     def get_exist(self):
-        return self.get_user_id() is not None
+        return self.user_id is not None
 
     def get_progress(self):
-        if not self.get_exist():
+        if not self.exist:
             raise RuntimeError("Friend does not exist.")
-        rsp = net.send(command.QueryUsersProgress(self.__client.session, [self.__uid]))
-        return rsp[str(self.__uid)]
+        rsp = net.send(command.QueryUsersProgress(self.__client.session, [self.user_id]))
+        return rsp[str(self.user_id)]
 
     network = property(get_network)
     network_id = property(get_network_id)
