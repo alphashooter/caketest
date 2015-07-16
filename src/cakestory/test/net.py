@@ -48,7 +48,9 @@ class Connection:
 
         print "Server response\n" \
               "Data:    %s\n" % data
-        return utils.sdict(json.loads(data))
+
+        command.process(utils.sdict(json.loads(data)))
+        return command
 
     def send_get(self, command):
         data = command.data
@@ -72,7 +74,9 @@ class Connection:
 
         print "Server response\n" \
               "Data:    %s\n" % data
-        return utils.sdict(json.loads(data))
+
+        command.process(utils.sdict(json.loads(data)))
+        return command
 
     def send(self, command):
         if command.method == RequestMethod.POST:
