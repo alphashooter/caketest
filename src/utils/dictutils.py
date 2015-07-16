@@ -1,11 +1,20 @@
 class sdict(dict):
+    @staticmethod
+    def __convert_key(key):
+        return "".encode("utf-8") + key
+
     def __init__(self, iterable=None, **kwargs):
-        if not iterable:
-            iterable = dict()
-        dict.__init__(self, iterable, **kwargs)
-        for key in self.keys():
-            if isinstance(self[key], dict):
-                self[key] = sdict(self[key])
+        dict.__init__(self)
+        for key in iterable:
+            value = iterable[key]
+            if isinstance(value, dict):
+                value = sdict(value)
+            self[key] = value
+        for key in kwargs:
+            value = kwargs[key]
+            if isinstance(value, dict):
+                value = sdict(value)
+            self[key] = value
 
     def copy(self):
         return sdict(self)
@@ -14,13 +23,13 @@ class sdict(dict):
         return self.__contains__(k)
 
     def __contains__(self, item):
-        return dict.__contains__(self, str(item))
+        return dict.__contains__(self, sdict.__convert_key(item))
 
     def __getitem__(self, item):
-        return dict.__getitem__(self, str(item))
+        return dict.__getitem__(self, sdict.__convert_key(item))
 
     def __setitem__(self, item, value):
-        return dict.__setitem__(self, str(item), value)
+        return dict.__setitem__(self, sdict.__convert_key(item), value)
 
 
 def merge_objects(obj1, obj2):
