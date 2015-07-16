@@ -3,6 +3,11 @@ import net
 import command
 
 
+class LevelLimit:
+    MOVES = "moves"
+    TIME = "time"
+
+
 class Level:
     def __init__(self, client, chapter, id, hash, bonus=False, data=None):
         self.__client = client
@@ -25,11 +30,39 @@ class Level:
         if data:
             self.parse(data)
 
+    def __autoload(self):
+        if not self.is_loaded : self.load()
+
     def parse(self, data):
         self.__data = data
 
     def load(self):
         self.parse(net.send(command.GetLevel(self.hash)))
+
+    def finish(self, score=None, limit=None, lives=None, boosters=None):
+        if score is None:
+            score = self.get_star(1)
+        else:
+            score = int(score)
+        if limit is None:
+            limit = self.get_limit()
+        else:
+            limit = int(limit)
+        if lives is None:
+            lives = 0
+        else:
+            lives = int(lives)
+
+        cmd = None
+        if self.get_limit_type() == LevelLimit.MOVES:
+            cmd = command.FinishLevelCommand(self.__client, self.qualified_id, score, used_moves=limit, used_lives=lives, used_boosters=boosters)
+        elif self.get_limit_type() == LevelLimit.TIME:
+            cmd = command.FinishLevelCommand(self.__client, self.qualified_id, score, used_time=limit, used_lives=lives, used_boosters=boosters)
+        else:
+            raise RuntimeError("Unknown limit type %s." % limit)
+
+        net.send(cmd)
+        return not cmd.rejected
 
     def get_id(self):
         return self.__id
@@ -146,8 +179,16 @@ class Level:
         return star
 
     def get_star(self, num):
-        if not self.is_loaded : self.load()
+        self.__autoload()
         return self.__data["scores"][num - 1]
+
+    def get_limit(self):
+        self.__autoload()
+        return self.__data["limit"][self.get_limit_type()]
+
+    def get_limit_type(self):
+        self.__autoload()
+        for key in self.__data["limit"] : return key
 
     id = property(get_id)
     qualified_id = property(get_qualified_id)

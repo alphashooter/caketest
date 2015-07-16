@@ -128,6 +128,7 @@ class Client:
     def __init__(self):
         self.__info = dict()
         self.__session = None
+        self.__next_command = 0
 
         self.__state = ClientState(self)
         self.__defs = ClientDefs(self)
@@ -193,6 +194,10 @@ class Client:
         if not self.__session : self.__session_get()
         return self.__session
 
+    def get_next_command(self):
+        self.__next_command += 1
+        return self.__next_command
+
     def get_state(self):
         if not self.__state.get_is_loaded() : self.__state.load()
         return self.__state
@@ -206,6 +211,7 @@ class Client:
         return self.__map
 
     session = property(get_session)
+    next_command = property(get_next_command)
     state = property(get_state)
     defs = property(get_defs)
     map = property(get_map)
