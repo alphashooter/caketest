@@ -99,3 +99,7 @@ class QueryUsersLevels(ServerCommand):
             },
             net.RequestMethod.POST
         )
+
+class ResetState(ServerCommand):
+    def __init__(self, session):
+        ServerCommand.__init__(self, "/reset", {"session": session}, net.RequestMethod.POST)

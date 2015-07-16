@@ -185,6 +185,10 @@ class Client:
         )
         self.__state.load()
 
+    def reset(self):
+        net.send(command.ResetState(self.session))
+        self.__state.load()
+
     def get_session(self):
         if not self.__session : self.__session_get()
         return self.__session
