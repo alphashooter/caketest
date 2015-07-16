@@ -226,3 +226,13 @@ class LoseLevelCommand(ExecuteCommand):
         }
 
         ExecuteCommand.__init__(self, client, "lose_level", params)
+
+
+class UnlockChapterCommand(ExecuteCommand):
+    def __init__(self, client):
+        ExecuteCommand.__init__(self, client, "unlock_chapter", {})
+
+
+class BuyChapterUnlocksCommand(ExecuteCommand):
+    def __init__(self, client):
+        ExecuteCommand.__init__(self, client, "buy_chapter_unlocks", {"network_code": "FB"})

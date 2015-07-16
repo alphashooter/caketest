@@ -3,9 +3,113 @@ import net
 import command
 
 
-class LevelLimit:
-    MOVES = "moves"
-    TIME = "time"
+class Limit:
+    """
+    An enumeration containing level limit types.
+
+    Possible values are held in static variables:
+
+    - Limit.MOVES -- for levels with moves limit
+    - Limit.TIME -- for levels with time limit
+    """
+
+    __VALUES = ["moves", "time"]
+
+    MOVES = None
+    TIME = None
+
+    def __init__(self, value):
+        value = str(value)
+        if not value in Limit.__VALUES:
+            raise RuntimeError("Invalid value %s." % value)
+        self.value = value
+
+    def __str__(self):
+        return self.value
+
+    def __eq__(self, other):
+        return self.value == str(other)
+
+    def __ne__(self, other):
+        return self.value == str(other)
+
+
+Limit.MOVES = Limit("moves")
+Limit.TIME = Limit("time")
+
+
+class Target:
+    """
+    An enumeration containing level target types.
+
+    Possible values are held in static variables:
+
+    - Target.SCORE -- for levels with score target
+    - Target.GLAZE -- for levels with clear-backs target
+    - Target.INGREDIENTS -- for levels with get-ingredients target
+    - Target.COLORS -- for levels with get-colors target
+    - Target.TOYS -- for levels with free-toys target
+    - Target.MINE -- for bonus levels
+    """
+    __VALUES = ["score", "clearbacks", "get_ingredients", "get_colors", "glass", "toys"]
+
+    SCORE = None
+    GLAZE = None
+    INGREDIENTS = None
+    COLORS = None
+    TOYS = None
+    MINE = None
+
+    def __init__(self, value):
+        value = str(value)
+        if not value in Target.__VALUES:
+            raise RuntimeError("Invalid value %s." % value)
+        self.value = value
+
+    def __str__(self):
+        return self.value
+
+    def __eq__(self, other):
+        return self.value == str(other)
+
+    def __ne__(self, other):
+        return self.value == str(other)
+
+
+Target.SCORE = Target("score")
+Target.GLAZE = Target("clearbacks")
+Target.INGREDIENTS = Target("get_ingredients")
+Target.COLORS = Target("get_colors")
+Target.TOYS = Target("toys")
+Target.MINE = Target("glass")
+
+
+class Star:
+    __VALUES = [1, 2, 3]
+
+    FIRST = None
+    SECOND = None
+    THIRD = None
+
+    def __init__(self, value):
+        value = int(value)
+        if not value in Star.__VALUES:
+            raise RuntimeError("Invalid value %d." % value)
+        self.value = value
+
+    def __int__(self):
+        return self.value
+
+    def __coerce__(self, other):
+        return (int(self), other)
+
+    def __cmp__(self, other):
+        return int(self) - int(other)
+
+
+Star.FIRST = Star(1)
+Star.SECOND = Star(2)
+Star.THIRD = Star(3)
 
 
 class Level:
@@ -41,9 +145,12 @@ class Level:
 
     def finish(self, score=None, limit=None, lives=None, boosters=None):
         if score is None:
-            score = self.get_star(1)
+            score = self.get_star(Star.FIRST)
+        elif isinstance(score, Star):
+            score = self.get_star(score.value)
         else:
             score = int(score)
+
         if limit is None:
             limit = self.get_limit()
         else:
@@ -54,15 +161,28 @@ class Level:
             lives = int(lives)
 
         cmd = None
-        if self.get_limit_type() == LevelLimit.MOVES:
+        if self.get_limit_type() == Limit.MOVES:
             cmd = command.FinishLevelCommand(self.__client, self.qualified_id, score, used_moves=limit, used_lives=lives, used_boosters=boosters)
-        elif self.get_limit_type() == LevelLimit.TIME:
+        elif self.get_limit_type() == Limit.TIME:
             cmd = command.FinishLevelCommand(self.__client, self.qualified_id, score, used_time=limit, used_lives=lives, used_boosters=boosters)
         else:
             raise RuntimeError("Unknown limit type %s." % limit)
 
         net.send(cmd)
         return not cmd.rejected
+
+    def force_finish(self, score=None, limit=None, lives=None, boosters=None):
+        prev = self.prev
+
+        if prev is not None and not prev.is_finished:
+            if not prev.force_finish():
+                return False
+
+        if self.chapter.is_locked:
+            if not self.chapter.force_unlock():
+                return False
+
+        return self.finish(score, limit, lives, boosters)
 
     def lose(self, completion=None, used_boosters=None):
         if completion is None:
@@ -73,6 +193,19 @@ class Level:
         cmd = command.LoseLevelCommand(self.__client, self.qualified_id, completion, used_boosters)
         net.send(cmd)
         return not cmd.rejected
+
+    def force_lose(self, completion=None, used_boosters=None):
+        prev = self.prev
+
+        if prev is not None and not prev.is_finished:
+            if not prev.force_finish():
+                return False
+
+        if self.chapter.is_locked:
+            if not self.chapter.force_unlock():
+                return False
+
+        return self.lose(completion, used_boosters)
 
     def get_id(self):
         return self.__id
@@ -163,13 +296,19 @@ class Level:
         else:
             return 0
 
-    def get_user_stars(self):
+    def get_user_star(self):
         score = self.get_user_score()
+
         star = 0
         for star in [1, 2, 3]:
             if score < self.get_star(star):
-                return star - 1
-        return star
+                break
+        star = star - 1
+
+        if not star:
+            return None
+
+        return Star(star)
 
     def get_friend_finished(self, friend):
         return friend.progress > self.id
@@ -188,9 +327,9 @@ class Level:
                 return star - 1
         return star
 
-    def get_star(self, num):
+    def get_star(self, star):
         self.__autoload()
-        return self.__data["scores"][num - 1]
+        return self.__data["scores"][int(star) - 1]
 
     def get_limit(self):
         self.__autoload()
@@ -198,7 +337,14 @@ class Level:
 
     def get_limit_type(self):
         self.__autoload()
-        for key in self.__data["limit"] : return key
+        for key in self.__data["limit"] : return Limit(key)
+
+    def get_level_type(self):
+        self.__autoload()
+        if len(self.__data["objectives"]) > 0:
+            for key in self.__data["objectives"] : return Target(key)
+        return Target("score")
+
 
     id = property(get_id)
     qualified_id = property(get_qualified_id)
@@ -220,7 +366,16 @@ class Level:
     is_first_in_chapter = property(get_is_first_in_chapter)
     is_last_in_chapter = property(get_is_last_in_chapter)
 
+    limit_type = property(get_limit_type)
+    level_type = property(get_level_type)
+
+    limit = property(get_limit)
+    star1 = property(lambda self: self.get_star(1))
+    star2 = property(lambda self: self.get_star(2))
+    star3 = property(lambda self: self.get_star(3))
+
     is_bonus = property(get_is_bonus)
+    is_finished = property(get_user_finished)
 
 class Chapter:
     def __init__(self, client, map, id, hash, data=None):
@@ -236,6 +391,17 @@ class Chapter:
         if data:
             self.parse(data)
 
+    def __getattr__(self, item):
+        match = re.match(r"level_(\d+)", item)
+        if match:
+            return self.get_level(int(match.group(1)))
+
+        match = re.match(r"bonus_(\d+)", item)
+        if match:
+            return self.get_bonus_level(int(match.group(1)))
+
+        raise AttributeError()
+
     def parse(self, data):
         self.__levels = list(Level(self.__client, self, data["levels"][i]["id"], data["levels"][i]["hash"]) for i in range(len(data["levels"])))
         self.__bonus = list()
@@ -250,6 +416,33 @@ class Chapter:
             rsp = net.send(command.GetChapter(self.hash))
             for key in list(rsp.keys()):
                 self.get_level_by_hash(key).parse(rsp[key])
+
+    def finish(self):
+        if self.is_finished:
+            return True
+        return self.last_level.force_finish()
+
+    def unlock(self):
+        if not self.is_current:
+            return False
+        if self.is_unlocked:
+            return True
+
+        cmd = command.UnlockChapterCommand(self.__client)
+        net.send(cmd)
+
+        return not cmd.rejected
+
+    def force_unlock(self):
+        if self.is_unlocked:
+            return True
+        if not self.finish():
+            return False
+
+        cmd = command.BuyChapterUnlocksCommand(self.__client)
+        net.send(cmd)
+
+        return not cmd.rejected
 
     def get_id(self):
         return self.__id
@@ -327,7 +520,7 @@ class Chapter:
         return self.get_level(ids[len(ids) - 1])
 
     def get_levels(self):
-        return self.__levels[:]
+        return sorted(self.__levels[:], key=Level.get_id)
 
     def get_bonus_level(self, id=None):
         if not id :
@@ -336,6 +529,9 @@ class Chapter:
             if str(self.__bonus[i].id) == str(id) or self.__bonus[i].qualified_id == str(id):
                 return self.__bonus[i]
         return None
+
+    def get_bonus_levels(self):
+        return sorted(self.__bonus[:], key=Level.get_id)
 
     def get_unlocks(self):
         if self.qualified_id in self.__client.state and "unlocks" in self.__client.state.chapters[self.qualified_id]:
@@ -356,6 +552,9 @@ class Chapter:
     def get_is_unlocked(self):
         return not self.get_is_locked()
 
+    def get_is_finished(self):
+        return self.__client.state.progress > self.last_level.id
+
     id = property(get_id)
     qualified_id = property(get_qualified_id)
     hash = property(get_hash)
@@ -370,6 +569,8 @@ class Chapter:
     is_last = property(get_is_last)
     is_current = property(get_is_current)
 
+    levels = property(get_levels)
+    bonus_levels = property(get_bonus_levels)
     first_level = property(get_level_first)
     last_level = property(get_level_last)
 
@@ -377,6 +578,7 @@ class Chapter:
     unlocks = property(get_unlocks_count)
     is_locked = property(get_is_locked)
     is_unlocked = property(get_is_unlocked)
+    is_finished = property(get_is_finished)
 
 
 class Map:
@@ -385,6 +587,22 @@ class Map:
         self.__chapters = None
         if data:
             self.parse(data)
+
+    def __getattr__(self, item):
+        match = re.match(r"level_(\d+)", item)
+        if match:
+            return self.get_level(int(match.group(1)))
+
+        match = re.match(r"bonus_(\d+)", item)
+        if match:
+            return self.get_bonus_level(int(match.group(1)))
+
+        match = re.match(r"chapter_(\d+)", item)
+        if match:
+            return self.get_chapter(int(match.group(1)))
+
+        raise AttributeError()
+
 
     def parse(self, data):
         self.__chapters = list(Chapter(self.__client, self, data[i]["id"], data[i]["hash"], data[i]) for i in range(len(data)))
@@ -433,7 +651,7 @@ class Map:
             return prev
 
     def get_chapters(self):
-        return self.__chapters[:]
+        return sorted(self.__chapters[:], key=Chapter.get_id)
 
     def get_level_by_hash(self, hash):
         for i in range(len(self.__chapters)):
@@ -469,12 +687,24 @@ class Map:
             if level: return level
         return None
 
+    def get_bonus_levels(self):
+        chapters = self.get_chapters()
+        levels = list()
+        for i in range(len(chapters)):
+            levels += chapters[i].get_bonus_levels()
+        return levels
+
     is_loaded = property(get_is_loaded)
     is_inited = property(get_is_inited)
 
+    chapters = property(get_chapters)
     first_chapter = property(get_chapter_first)
     last_chapter = property(get_chapter_last)
     current_chapter = property(get_chapter_current)
+
+    levels = property(get_levels)
     first_level = property(get_level_first)
     last_level = property(get_level_last)
     current_level = property(get_level_current)
+
+    bonus_levels = property(get_bonus_levels)
