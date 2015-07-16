@@ -100,6 +100,19 @@ class QueryUsersLevels(ServerCommand):
             net.RequestMethod.POST
         )
 
+
+class QueryUsersTime(ServerCommand):
+    def __init__(self, session, uids):
+        ServerCommand.__init__(
+            self,
+            "/query/users/time",
+            {
+                "session": session,
+                "users": uids[:]
+            },
+            net.RequestMethod.POST
+        )
+
 class ResetState(ServerCommand):
     def __init__(self, session):
         ServerCommand.__init__(self, "/reset", {"session": session}, net.RequestMethod.POST)

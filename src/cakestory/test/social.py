@@ -8,6 +8,10 @@ class Friend:
         self.__nid = str(nid)
         self.__uid = None
 
+    def __assert_exist(self):
+        if not self.exist:
+            raise RuntimeError("Friend does not exist.")
+
     def get_network(self):
         return self.__network
 
@@ -25,13 +29,28 @@ class Friend:
         return self.user_id is not None
 
     def get_progress(self):
-        if not self.exist:
-            raise RuntimeError("Friend does not exist.")
+        self.__assert_exist()
         rsp = net.send(command.QueryUsersProgress(self.__client.session, [self.user_id]))
-        return rsp[str(self.user_id)]
+        return int(rsp[self.user_id])
+
+    def get_last_activity(self):
+        self.__assert_exist()
+        rsp = net.send(command.QueryUsersTime(self.__client.session, [self.user_id]))
+        if self.user_id in rsp and "last_activity" in rsp[self.user_id]:
+            return int(rsp[self.user_id]["last_activity"])
+        return None
+
+    def get_last_level_activity(self):
+        self.__assert_exist()
+        rsp = net.send(command.QueryUsersTime(self.__client.session, [self.user_id]))
+        if self.user_id in rsp and "finish_level_time" in rsp[self.user_id]:
+            return int(rsp[self.user_id]["finish_level_time"])
+        return None
 
     network = property(get_network)
     network_id = property(get_network_id)
     user_id = property(get_user_id)
     exist = property(get_exist)
     progress = property(get_progress)
+    last_activity = property(get_last_activity)
+    last_level_activity = property(get_last_level_activity)
