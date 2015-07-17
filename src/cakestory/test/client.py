@@ -171,7 +171,7 @@ class Client(object):
         sha.update("%s_%s_%s" % (network, uid, Client.__DEVICE_TOKEN))
         return sha.hexdigest()
 
-    def __init__(self, network=None, nid=None, token=None, auth=None):
+    def __init__(self, network=None, nid=None, token=None):
         self.__info = list()
         self.__session = None
         self.__next_command = 0
@@ -181,7 +181,7 @@ class Client(object):
         self.__map = map.Map(self)
 
         if network is not None or nid is not None:
-            self.init(network, nid, token, auth)
+            self.init(network, nid, token)
 
     def __add_network(self, info):
         if self.__has_network(info.network):
