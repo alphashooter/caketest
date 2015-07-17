@@ -2,7 +2,7 @@ import re
 import net
 import utils
 
-class ServerCommand:
+class ServerCommand(object):
     def __init__(self, name, data=None, method=net.RequestMethod.POST):
         self.name = name
         self.data = data
@@ -162,6 +162,9 @@ class ExecuteCommand(ServerCommand):
             net.RequestMethod.POST
         )
 
+    def __get_client(self):
+        return self.__client
+
     def process(self, response):
         ServerCommand.process(self, response)
         self.rejected = False
@@ -171,6 +174,8 @@ class ExecuteCommand(ServerCommand):
                     self.rejected = True
                     break
         self.__client.state.merge(response)
+
+    client = property(__get_client)
 
 class FinishLevelCommand(ExecuteCommand):
     def __init__(self, client, level, score, used_moves=None, used_time=None, used_lives=None, used_boosters=None):

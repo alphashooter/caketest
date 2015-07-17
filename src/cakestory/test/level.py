@@ -123,7 +123,7 @@ Star.SECOND = Star(2)
 Star.THIRD = Star(3)
 
 
-class Level:
+class Level(object):
     def __init__(self, client, chapter, id, hash, bonus=False, data=None):
         self.__client = client
         self.__chapter = chapter

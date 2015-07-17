@@ -1,7 +1,7 @@
 import net
 import command
 
-class Friend:
+class Friend(object):
     def __init__(self, client, network, nid):
         self.__client = client
         self.__network = network

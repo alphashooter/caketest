@@ -4,7 +4,7 @@ import command
 import level
 
 
-class Chapter:
+class Chapter(object):
     def __init__(self, client, map, id, hash, data=None):
         self.__client = client
         self.__map = map
@@ -208,7 +208,7 @@ class Chapter:
     is_finished = property(get_is_finished)
 
 
-class Map:
+class Map(object):
     def __init__(self, client, data=None):
         self.__client = client
         self.__chapters = None

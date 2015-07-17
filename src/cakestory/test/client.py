@@ -10,7 +10,7 @@ class Network:
     FB = "FB"
 
 
-class ClientInfo:
+class ClientInfo(object):
     def __init__(self, network, nid, token):
         self.__network = network
         self.__nid = nid
@@ -33,13 +33,13 @@ class ClientInfo:
     access_token = property(get_access_token)
 
 
-class ClientState:
+class ClientState(object):
     def __init__(self, client):
         self.__client = client
         self.__data = None
 
     def load(self):
-        self.merge(net.send(command.GetState(self.__client.session)))
+        self.merge(net.send(command.GetState(self.__client.session)).response)
 
     def merge(self, data):
         if self.__data:
@@ -62,9 +62,29 @@ class ClientState:
         if not self.is_loaded : self.load()
         return int(self.__data["user_data"]["real_balance"])
 
+    def set_real_balance(self, value):
+        self.add_real_balance(max(0, int(value) - self.get_real_balance()))
+
+    def add_real_balance(self, value):
+        if value > 0:
+            cmd = command.RealBalanceCommand(self.__client, value)
+            net.send(cmd)
+            if cmd.rejected:
+                raise RuntimeError("Cannot change real balance.")
+
     def get_game_balance(self):
         if not self.is_loaded : self.load()
         return int(self.__data["user_data"]["game_balance"])
+
+    def set_game_balance(self, value):
+        self.add_game_balance(max(0, int(value) - self.get_game_balance()))
+
+    def add_game_balance(self, value):
+        if value > 0:
+            cmd = command.GameBalanceCommand(self.__client, value)
+            net.send(cmd)
+            if cmd.rejected:
+                raise RuntimeError("Cannot change game balance.")
 
     def get_chapters(self):
         if not self.is_loaded : self.load()
@@ -79,19 +99,19 @@ class ClientState:
     user_id = property(get_user_id)
     progress = property(get_progress)
     chapters = property(get_chapters)
-    real_balance = property(get_real_balance)
-    game_balance = property(get_game_balance)
+    real_balance = property(get_real_balance, set_real_balance)
+    game_balance = property(get_game_balance, set_game_balance)
 
     defs_hash = property(get_defs_hash)
 
 
-class ClientDefs:
+class ClientDefs(object):
     def __init__(self, client):
         self.__client = client
         self.__data = None
 
     def load(self):
-        self.merge(net.send(command.GetDefs(self.__client.state.defs_hash)))
+        self.merge(net.send(command.GetDefs(self.__client.state.defs_hash)).response)
 
     def merge(self, data):
         if self.__data:
@@ -110,13 +130,26 @@ class ClientDefs:
         if not self.is_loaded : self.load()
         return self.__data["chapters"]
 
+    def get_social_networks(self):
+        if not self.is_loaded : self.load()
+        return self.__data["social_networks"]
+
+    def get_unlock_price(self, count):
+        if count > 0:
+            network = self.__client.network
+            if not network in self.social_networks:
+                network = "default"
+            return self.social_networks[network]["game_items"]["unlocks"][count]["price"]["real_balance"]
+        return 0
+
     is_loaded = property(get_is_loaded)
 
+    social_networks = property(get_social_networks)
     mapscreen = property(get_mapscreen)
     chapters = property(get_chapters)
 
 
-class Client:
+class Client(object):
     __DEVICE_TOKEN = "gFdsrte55UIEEWgsggagtq998joOQ"
 
     @staticmethod
