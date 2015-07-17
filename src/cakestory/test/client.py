@@ -3,6 +3,7 @@ import utils
 import net
 import command
 import map
+import social
 
 
 class Network:
@@ -179,6 +180,7 @@ class Client(object):
         self.__state = ClientState(self)
         self.__defs = ClientDefs(self)
         self.__map = map.Map(self)
+        self.__friends = []
 
         if network is not None or nid is not None:
             self.init(network, nid, token)
@@ -195,6 +197,10 @@ class Client(object):
 
     def __has_network(self, network):
         return self.__get_network(network) is not None
+
+    def __convert_friend(self, friend):
+        self.add_friends(friend)
+        return self.get_friend(friend)
 
     def __session_get(self, network=None, nid=None, token=None, auth=None):
         if not network:
@@ -244,6 +250,60 @@ class Client(object):
             return info.access_token
         return None
 
+    def has_friend(self, descriptor):
+        return self.get_friend(descriptor) is not None
+
+    def get_friend(self, descriptor):
+        if isinstance(descriptor, Client):
+            for info in descriptor.__info:
+                friend = self.get_friend(info.network_id)
+                if friend is not None : return friend
+        else:
+            network_id = None
+
+            if isinstance(descriptor, social.Friend):
+                network_id = descriptor.network_id
+            else:
+                network_id = str(descriptor)
+
+            for friend in self.__friends:
+                    if friend.network_id == network_id:
+                        return friend
+        return None
+
+    def get_friends(self):
+        return self.__friends[:]
+
+    def add_friends(self, *args):
+        for arg in args:
+            if isinstance(arg, list):
+                self.add_friends(*arg)
+            elif isinstance(arg, tuple):
+                self.add_friends(*arg)
+            else:
+                if self.has_friend(arg):
+                    continue
+
+                if isinstance(arg, Client):
+                    self.__friends.append(social.Friend(self, arg.network, arg.network_id))
+                elif isinstance(arg, social.Friend):
+                    self.__friends.append(arg)
+                else:
+                    self.__friends.append(social.Friend(self, self.network, str(arg)))
+
+    def send_life(self, friend):
+        return self.__convert_friend(friend).send_life()
+
+    def send_help(self, friend, level=None):
+        return self.__convert_friend(friend).send_help(level)
+
+    def request_life(self, friend):
+        return self.__convert_friend(friend).request_life()
+
+    def request_fuel(self, friend):
+        return self.__convert_friend(friend).request_fuel()
+
+
     def init(self, network=None, nid=None, token=None, auth=None):
         if self.__session is not None:
             raise RuntimeError("Client session is already inited.")
@@ -291,4 +351,5 @@ class Client(object):
     state = property(get_state)
     defs = property(get_defs)
     map = property(get_map)
+    friends = property(get_friends)
 
