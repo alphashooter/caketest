@@ -247,6 +247,9 @@ class Map(object):
         if data:
             self.parse(data)
 
+    def __autoinit(self):
+        if not self.is_inited : self.parse(self.__client.defs.mapscreen)
+
     def __getattr__(self, item):
         match = re.match(r"level_(\d+)", item)
         if match:
@@ -282,26 +285,31 @@ class Map(object):
         return True
 
     def get_chapter_by_hash(self, hash):
+        self.__autoinit()
         for i in range(len(self.__chapters)):
             if self.__chapters[i].hash == str(hash):
                 return self.__chapters[i]
         return None
 
     def get_chapter(self, id):
+        self.__autoinit()
         for i in range(len(self.__chapters)):
             if str(self.__chapters[i].id) == str(id) or str(self.__chapters[i].qualified_id) == str(id):
                 return self.__chapters[i]
         return None
 
     def get_chapter_first(self):
+        self.__autoinit()
         ids = sorted(list(self.__chapters[i].id for i in range(len(self.__chapters))))
         return self.get_chapter(ids[0])
 
     def get_chapter_last(self):
+        self.__autoinit()
         ids = sorted(list(self.__chapters[i].id for i in range(len(self.__chapters))))
         return self.get_chapter(ids[len(ids) - 1])
 
     def get_chapter_current(self):
+        self.__autoinit()
         current = self.current_level.chapter
         prev = current.prev
         if prev is None or prev.is_unlocked:
@@ -310,30 +318,37 @@ class Map(object):
             return prev
 
     def get_chapters(self):
+        self.__autoinit()
         return sorted(self.__chapters[:], key=Chapter.get_id)
 
     def get_level_by_hash(self, hash):
+        self.__autoinit()
         for i in range(len(self.__chapters)):
             level = self.__chapters[i].get_level_by_hash(hash)
             if level: return level
         return None
 
     def get_level(self, id):
+        self.__autoinit()
         for i in range(len(self.__chapters)):
             level = self.__chapters[i].get_level(id)
             if level: return level
         return None
 
     def get_level_first(self):
+        self.__autoinit()
         return self.first_chapter.first_level
 
     def get_level_last(self):
+        self.__autoinit()
         return self.last_chapter.last_level
 
     def get_level_current(self):
+        self.__autoinit()
         return self.get_level(self.__client.state.progress)
 
     def get_levels(self):
+        self.__autoinit()
         chapters = self.get_chapters()
         levels = list()
         for i in range(len(chapters)):
@@ -341,12 +356,14 @@ class Map(object):
         return levels
 
     def get_bonus_level(self, id):
+        self.__autoinit()
         for i in range(len(self.__chapters)):
             level = self.__chapters[i].get_bonus_level(id)
             if level: return level
         return None
 
     def get_bonus_levels(self):
+        self.__autoinit()
         chapters = self.get_chapters()
         levels = list()
         for i in range(len(chapters)):

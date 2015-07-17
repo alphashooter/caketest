@@ -38,6 +38,9 @@ class ClientState(object):
         self.__client = client
         self.__data = None
 
+    def __autoload(self):
+        if not self.is_loaded : self.load()
+
     def load(self):
         self.merge(net.send(command.GetState(self.__client.session)).response)
 
@@ -51,15 +54,15 @@ class ClientState(object):
         return bool(self.__data)
 
     def get_user_id(self):
-        if not self.is_loaded : self.load()
+        self.__autoload()
         return self.__data["user_data"]["user_id"]
 
     def get_progress(self):
-        if not self.is_loaded : self.load()
+        self.__autoload()
         return int(self.__data["user_data"]["progress"])
 
     def get_real_balance(self):
-        if not self.is_loaded : self.load()
+        self.__autoload()
         return int(self.__data["user_data"]["real_balance"])
 
     def set_real_balance(self, value):
@@ -73,7 +76,7 @@ class ClientState(object):
                 raise RuntimeError("Cannot change real balance.")
 
     def get_game_balance(self):
-        if not self.is_loaded : self.load()
+        self.__autoload()
         return int(self.__data["user_data"]["game_balance"])
 
     def set_game_balance(self, value):
@@ -87,11 +90,11 @@ class ClientState(object):
                 raise RuntimeError("Cannot change game balance.")
 
     def get_chapters(self):
-        if not self.is_loaded : self.load()
+        self.__autoload()
         return self.__data["user_data"]["chapters"]
 
     def get_defs_hash(self):
-        if not self.is_loaded : self.load()
+        self.__autoload()
         return self.__data["defs_hash"]
 
     is_loaded = property(get_is_loaded)
@@ -110,6 +113,9 @@ class ClientDefs(object):
         self.__client = client
         self.__data = None
 
+    def __autoload(self):
+        if not self.is_loaded : self.load()
+
     def load(self):
         self.merge(net.send(command.GetDefs(self.__client.state.defs_hash)).response)
 
@@ -123,18 +129,19 @@ class ClientDefs(object):
         return bool(self.__data)
 
     def get_mapscreen(self):
-        if not self.is_loaded : self.load()
+        self.__autoload()
         return self.__data["mapscreen"]["chapters"]
 
     def get_chapters(self):
-        if not self.is_loaded : self.load()
+        self.__autoload()
         return self.__data["chapters"]
 
     def get_social_networks(self):
-        if not self.is_loaded : self.load()
+        self.__autoload()
         return self.__data["social_networks"]
 
     def get_unlock_price(self, count):
+        self.__autoload()
         if count > 0:
             network = self.__client.network
             if not network in self.social_networks:
@@ -256,15 +263,12 @@ class Client(object):
         return self.__next_command
 
     def get_state(self):
-        if not self.__state.get_is_loaded() : self.__state.load()
         return self.__state
 
     def get_defs(self):
-        if not self.__defs.get_is_loaded() : self.__defs.load()
         return self.__defs
 
     def get_map(self):
-        if not self.__map.get_is_inited() : self.__map.parse(self.get_defs().mapscreen)
         return self.__map
 
     network = property(get_network)
