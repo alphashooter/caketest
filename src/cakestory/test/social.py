@@ -1,6 +1,7 @@
 import net
 import command
 
+
 class Friend(object):
     def __init__(self, client, network, nid):
         self.__client = client
@@ -37,11 +38,11 @@ class Friend(object):
 
     def request_life(self):
         self.__assert_exist()
-        return not net.send(command.RequestLifeCommand(self.__client, [self.user_id])).rejected
+        return not net.send(command.RequestLifeCommand(self.__client, self.user_id)).rejected
 
     def request_fuel(self):
         self.__assert_exist()
-        return not net.send(command.RequestFuelCommand(self.__client, [self.user_id])).rejected
+        return not net.send(command.RequestFuelCommand(self.__client, self.user_id)).rejected
 
     def get_exist(self):
         return self.user_id is not None
