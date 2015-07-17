@@ -145,6 +145,12 @@ class Level(object):
         if data:
             self.parse(data)
 
+    def __int__(self):
+        return self.__id
+
+    def __str__(self):
+        return self.__qid
+
     def __autoload(self):
         if not self.is_loaded : self.load()
 
