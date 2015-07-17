@@ -165,7 +165,7 @@ class Client(object):
         sha.update("%s_%s_%s" % (network, uid, Client.__DEVICE_TOKEN))
         return sha.hexdigest()
 
-    def __init__(self):
+    def __init__(self, network=None, nid=None, token=None, auth=None):
         self.__info = list()
         self.__session = None
         self.__next_command = 0
@@ -173,6 +173,9 @@ class Client(object):
         self.__state = ClientState(self)
         self.__defs = ClientDefs(self)
         self.__map = map.Map(self)
+
+        if network is not None or nid is not None:
+            self.init(network, nid, token, auth)
 
     def __add_network(self, info):
         if self.__has_network(info.network):
@@ -236,6 +239,8 @@ class Client(object):
         return None
 
     def init(self, network=None, nid=None, token=None, auth=None):
+        if self.__session is not None:
+            raise RuntimeError("Client session is already inited.")
         self.__session_get(network, nid, token, auth)
 
     def join(self, network=None, nid=None, token=None):
