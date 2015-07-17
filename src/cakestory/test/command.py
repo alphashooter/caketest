@@ -246,6 +246,26 @@ class BuyChapterUnlocksCommand(ExecuteCommand):
         ExecuteCommand.__init__(self, client, "buy_chapter_unlocks", {"network_code": network})
 
 
+class SendLifeCommand(ExecuteCommand):
+    def __init__(self, client, uid):
+        ExecuteCommand.__init__(self, client, "send_life", {"user_id": int(uid)})
+
+
+class SendHelpCommand(ExecuteCommand):
+    def __init__(self, client, uid, level):
+        ExecuteCommand.__init__(self, client, "send_help_for_level", {"user_id": int(uid), "level": int(level)})
+
+
+class RequestLifeCommand(ExecuteCommand):
+    def __init__(self, client, uid):
+        ExecuteCommand.__init__(self, client, "request_life", {"user_id": int(uid)})
+
+
+class RequestFuelCommand(ExecuteCommand):
+    def __init__(self, client, uid):
+        ExecuteCommand.__init__(self, client, "request_fuel", {"user_id": int(uid)})
+
+
 class AddRealBalanceCommand(ExecuteCommand):
     def __init__(self, client, value):
         ExecuteCommand.__init__(self, client, "idkfa", {"real_balance": int(value)})

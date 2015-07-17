@@ -25,12 +25,30 @@ class Friend(object):
                 self.__uid = int(rsp[self.network][self.network_id])
         return self.__uid
 
+    def send_life(self):
+        self.__assert_exist()
+        return not net.send(command.SendLifeCommand(self.__client, self.user_id)).rejected
+
+    def send_help(self, level=None):
+        self.__assert_exist()
+        if level is None:
+            level = self.progress
+        return not net.send(command.SendHelpCommand(self.__client, self.user_id, level)).rejected
+
+    def request_life(self):
+        self.__assert_exist()
+        return not net.send(command.RequestLifeCommand(self.__client, [self.user_id])).rejected
+
+    def request_fuel(self):
+        self.__assert_exist()
+        return not net.send(command.RequestFuelCommand(self.__client, [self.user_id])).rejected
+
     def get_exist(self):
         return self.user_id is not None
 
     def get_progress(self):
         self.__assert_exist()
-        rsp = net.send(command.QueryUsersProgress(self.__client.session, [self.user_id]))
+        rsp = net.send(command.QueryUsersProgress(self.__client.session, [self.user_id])).response
         return int(rsp[self.user_id])
 
     def get_last_activity(self):
