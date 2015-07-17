@@ -136,6 +136,11 @@ class QueryUsersTime(ServerCommand):
         )
 
 
+class GetMessages(ServerCommand):
+    def __init__(self, session):
+        ServerCommand.__init__(self, "/messages/unread", {"session": str(session)}, net.RequestMethod.POST)
+
+
 class ResetState(ServerCommand):
     def __init__(self, session):
         ServerCommand.__init__(self, "/reset", {"session": session}, net.RequestMethod.POST)
@@ -264,6 +269,16 @@ class RequestLifeCommand(ExecuteCommand):
 class RequestFuelCommand(ExecuteCommand):
     def __init__(self, client, uid):
         ExecuteCommand.__init__(self, client, "request_fuel", {"user_id": int(uid)})
+
+
+class ReadMessageCommand(ExecuteCommand):
+    def __init__(self, client, id):
+        ExecuteCommand.__init__(self, client, "read_message", {"message_id": int(id)})
+
+
+class DeleteMessagesCommand(ExecuteCommand):
+    def __init__(self, client, ids):
+        ExecuteCommand.__init__(self, client, "delete_messages", {"ids": ids[:]})
 
 
 class AddRealBalanceCommand(ExecuteCommand):
