@@ -1,7 +1,7 @@
 class sdict(dict):
     @staticmethod
     def __convert_key(key):
-        return "".encode("utf-8") + key
+        return unicode(key).encode("utf-8")
 
     def __init__(self, iterable=None, **kwargs):
         dict.__init__(self)

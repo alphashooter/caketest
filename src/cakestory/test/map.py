@@ -40,7 +40,7 @@ class Chapter(object):
             for i in range(len(self.__levels)):
                 self.__levels[i].load()
         else:
-            rsp = net.send(command.GetChapter(self.hash))
+            rsp = net.send(command.GetChapter(self.hash)).response
             for key in list(rsp.keys()):
                 self.get_level_by_hash(key).parse(rsp[key])
 

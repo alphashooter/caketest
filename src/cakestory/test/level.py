@@ -152,7 +152,7 @@ class Level(object):
         self.__data = data
 
     def load(self):
-        self.parse(net.send(command.GetLevel(self.hash)))
+        self.parse(net.send(command.GetLevel(self.hash)).response)
 
     def finish(self, score=None, limit=None, lives=None, boosters=None):
         if score is None:
