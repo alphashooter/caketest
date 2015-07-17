@@ -70,7 +70,7 @@ class ClientState(object):
 
     def add_real_balance(self, value):
         if value > 0:
-            cmd = command.RealBalanceCommand(self.__client, value)
+            cmd = command.AddRealBalanceCommand(self.__client, value)
             net.send(cmd)
             if cmd.rejected:
                 raise RuntimeError("Cannot change real balance.")
@@ -84,7 +84,7 @@ class ClientState(object):
 
     def add_game_balance(self, value):
         if value > 0:
-            cmd = command.GameBalanceCommand(self.__client, value)
+            cmd = command.AddGameBalanceCommand(self.__client, value)
             net.send(cmd)
             if cmd.rejected:
                 raise RuntimeError("Cannot change game balance.")

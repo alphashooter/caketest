@@ -246,11 +246,11 @@ class BuyChapterUnlocksCommand(ExecuteCommand):
         ExecuteCommand.__init__(self, client, "buy_chapter_unlocks", {"network_code": network})
 
 
-class RealBalanceCommand(ExecuteCommand):
+class AddRealBalanceCommand(ExecuteCommand):
     def __init__(self, client, value):
         ExecuteCommand.__init__(self, client, "idkfa", {"real_balance": int(value)})
 
 
-class GameBalanceCommand(ExecuteCommand):
+class AddGameBalanceCommand(ExecuteCommand):
     def __init__(self, client, value):
         ExecuteCommand.__init__(self, client, "idkfa", {"game_balance": int(value)})
