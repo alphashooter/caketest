@@ -44,6 +44,9 @@ class ClientState(object):
     def load(self):
         self.merge(net.send(command.GetState(self.__client.session)).response)
 
+    def update(self):
+        self.load()
+
     def merge(self, data):
         if self.__data:
             utils.merge_objects(self.__data, data)
@@ -116,14 +119,17 @@ class ClientDefs(object):
     def __autoload(self):
         if not self.is_loaded : self.load()
 
-    def load(self):
-        self.merge(net.send(command.GetDefs(self.__client.state.defs_hash)).response)
-
     def merge(self, data):
         if self.__data:
             utils.merge_objects(self.__data, data)
         else:
             self.__data = data
+
+    def load(self):
+        self.merge(net.send(command.GetDefs(self.__client.state.defs_hash)).response)
+
+    def update(self):
+        self.load()
 
     def get_is_loaded(self):
         return bool(self.__data)
