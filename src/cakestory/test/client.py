@@ -4,6 +4,7 @@ import net
 import command
 import map
 import social
+import inbox
 
 
 class Network:
@@ -181,6 +182,7 @@ class Client(object):
         self.__defs = ClientDefs(self)
         self.__map = map.Map(self)
         self.__friends = []
+        self.__inbox = inbox.Inbox(self)
 
         if network is not None or nid is not None:
             self.init(network, nid, token)
@@ -259,15 +261,18 @@ class Client(object):
                 friend = self.get_friend(info.network_id)
                 if friend is not None : return friend
         else:
-            network_id = None
+            id = None
 
             if isinstance(descriptor, social.Friend):
-                network_id = descriptor.network_id
+                id = descriptor.network_id
             else:
-                network_id = str(descriptor)
+                id = descriptor
 
             for friend in self.__friends:
-                    if friend.network_id == network_id:
+                    if friend.network_id == str(id):
+                        return friend
+            for friend in self.__friends:
+                    if friend.exist and str(friend.user_id) == str(id):
                         return friend
         return None
 
@@ -342,6 +347,9 @@ class Client(object):
     def get_map(self):
         return self.__map
 
+    def get_inbox(self):
+        return self.__inbox
+
     network = property(get_network)
     network_id = property(get_network_id)
     access_token = property(get_access_token)
@@ -352,4 +360,5 @@ class Client(object):
     defs = property(get_defs)
     map = property(get_map)
     friends = property(get_friends)
+    inbox = property(get_inbox)
 
