@@ -240,4 +240,17 @@ class UnlockChapterCommand(ExecuteCommand):
 
 class BuyChapterUnlocksCommand(ExecuteCommand):
     def __init__(self, client):
-        ExecuteCommand.__init__(self, client, "buy_chapter_unlocks", {"network_code": "FB"})
+        network = client.network
+        if not network in client.defs.social_networks:
+            network = "default"
+        ExecuteCommand.__init__(self, client, "buy_chapter_unlocks", {"network_code": network})
+
+
+class RealBalanceCommand(ExecuteCommand):
+    def __init__(self, client, value):
+        ExecuteCommand.__init__(self, client, "idkfa", {"real_balance": int(value)})
+
+
+class GameBalanceCommand(ExecuteCommand):
+    def __init__(self, client, value):
+        ExecuteCommand.__init__(self, client, "idkfa", {"game_balance": int(value)})

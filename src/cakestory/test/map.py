@@ -45,31 +45,57 @@ class Chapter(object):
                 self.get_level_by_hash(key).parse(rsp[key])
 
     def finish(self):
-        if self.is_finished:
-            return True
-        return self.last_level.force_finish()
+        if self.is_locked:
+            return False
+
+        levels = self.levels
+        for level in levels:
+            if not level.is_finished:
+                if not level.finish():
+                    return False
+            else:
+                break
+
+        return True
+
+    def force_finish(self):
+        if self.is_locked:
+            if not self.force_unlock():
+                return False
+
+        return self.finish()
+
+    def buy_unlocks(self):
+        cmd = command.BuyChapterUnlocksCommand(self.__client)
+        net.send(cmd)
+        return not cmd.rejected
+
+    def force_buy_unlocks(self):
+        if self.__client.state.real_balance < self.unlock_price:
+            self.__client.state.real_balance = self.unlock_price
+        return self.buy_unlocks()
 
     def unlock(self):
-        if not self.is_current:
-            return False
-        if self.is_unlocked:
-            return True
-
         cmd = command.UnlockChapterCommand(self.__client)
         net.send(cmd)
-
         return not cmd.rejected
 
     def force_unlock(self):
         if self.is_unlocked:
             return True
-        if not self.finish():
-            return False
 
-        cmd = command.BuyChapterUnlocksCommand(self.__client)
-        net.send(cmd)
+        prev = self.prev
+        if prev is not None:
+            if not prev.is_unlocked:
+                if not prev.force_unlock():
+                    return False
+            if not prev.finish():
+                return False
 
-        return not cmd.rejected
+        if self.unlocks < self.locks:
+            self.force_buy_unlocks()
+
+        return self.unlock()
 
     def get_id(self):
         return self.__id
@@ -161,7 +187,7 @@ class Chapter(object):
         return sorted(self.__bonus[:], key=level.Level.get_id)
 
     def get_unlocks(self):
-        if self.qualified_id in self.__client.state and "unlocks" in self.__client.state.chapters[self.qualified_id]:
+        if self.qualified_id in self.__client.state.chapters and "unlocks" in self.__client.state.chapters[self.qualified_id]:
             return list(self.__client.state.chapters[self.qualified_id]["unlocks"])
         return list()
 
@@ -171,13 +197,18 @@ class Chapter(object):
     def get_unlocks_count(self):
         return len(self.get_unlocks())
 
+    def get_unlock_price(self):
+        if self.is_unlocked:
+            return 0
+        return self.__client.defs.get_unlock_price(self.locks - self.unlocks)
+
     def get_is_locked(self):
-        if self.qualified_id in self.__client.state and "unlocked" in self.__client.state.chapters[self.qualified_id]:
-            return not self.__client.state.chapters[self.qualified_id]["unlocked"]
-        return True
+        return not self.get_is_unlocked()
 
     def get_is_unlocked(self):
-        return not self.get_is_locked()
+        if self.qualified_id in self.__client.state.chapters and "unlocked" in self.__client.state.chapters[self.qualified_id]:
+            return bool(self.__client.state.chapters[self.qualified_id]["unlocked"])
+        return False
 
     def get_is_finished(self):
         return self.__client.state.progress > self.last_level.id
@@ -203,6 +234,7 @@ class Chapter(object):
 
     locks = property(get_locks_count)
     unlocks = property(get_unlocks_count)
+    unlock_price = property(get_unlock_price)
     is_locked = property(get_is_locked)
     is_unlocked = property(get_is_unlocked)
     is_finished = property(get_is_finished)

@@ -183,15 +183,18 @@ class Level(object):
         return not cmd.rejected
 
     def force_finish(self, score=None, limit=None, lives=None, boosters=None):
-        prev = self.prev
-
-        if prev is not None and not prev.is_finished:
-            if not prev.force_finish():
-                return False
-
         if self.chapter.is_locked:
             if not self.chapter.force_unlock():
                 return False
+
+        levels = self.chapter.levels
+        for level in levels:
+            if level.id != self.id:
+                if not level.is_finished:
+                    if not level.finish():
+                        return False
+            else:
+                break
 
         return self.finish(score, limit, lives, boosters)
 
@@ -206,15 +209,18 @@ class Level(object):
         return not cmd.rejected
 
     def force_lose(self, completion=None, used_boosters=None):
-        prev = self.prev
-
-        if prev is not None and not prev.is_finished:
-            if not prev.force_finish():
-                return False
-
         if self.chapter.is_locked:
             if not self.chapter.force_unlock():
                 return False
+
+        levels = self.chapter.levels
+        for level in levels:
+            if level.id != self.id:
+                if not level.is_finished:
+                    if not level.finish():
+                        return False
+            else:
+                break
 
         return self.lose(completion, used_boosters)
 
