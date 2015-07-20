@@ -1,3 +1,4 @@
+from plamee.Test import Test
 from plamee.cakestory import *
 
 def __check_requests(friend):
@@ -10,9 +11,13 @@ def __check_requests(friend):
 #
 
 def __send_requests(client, friend):
-    chapter = client.map.current_chapter.next
+    chapter = client.map.current_chapter
     if chapter is None:
         return False
+
+    #
+
+    Test.next_iteration()
 
     chapter.force_finish()
 
@@ -22,8 +27,10 @@ def __send_requests(client, friend):
     __check_requests(friend)
     return True
 
-def run():
-    client = Client(network="FB")
-    friend = Client(network="FB")
+#
 
-    while __send_requests(client, friend): pass
+client = Client(network="FB")
+friend = Client(network="FB")
+
+Test.start_module("fuel_request", len(client.map.chapters))
+while __send_requests(client, friend): pass

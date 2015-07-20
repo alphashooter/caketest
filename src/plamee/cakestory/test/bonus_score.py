@@ -1,17 +1,21 @@
 import random
+from plamee.Test import Test
 from plamee.cakestory import *
 
-def run():
-    client1 = Client()
-    client2 = Client()
+client1 = Client()
+client2 = Client()
 
-    for level in client1.map.bonus_levels:
-        score = random.randint(10000, 50000)
-        level.chapter.force_finish()
+Test.start_module("bonus_score", len(client1.map.bonus_levels))
 
-        level.finish(score=score)
-        if level.get_user_score() != score:
-            raise RuntimeError()
+for level in client1.map.bonus_levels:
+    Test.next_iteration()
 
-        if client2.map.get_bonus_level(level.id).get_friend_score(client1) != score:
-            raise RuntimeError()
+    score = random.randint(10000, 50000)
+    level.chapter.force_finish()
+
+    level.finish(score=score)
+    if level.get_user_score() != score:
+        raise RuntimeError()
+
+    if client2.map.get_bonus_level(level.id).get_friend_score(client1) != score:
+        raise RuntimeError()
