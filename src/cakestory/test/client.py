@@ -5,6 +5,7 @@ import command
 import map
 import social
 import inbox
+import storage
 
 
 class Network:
@@ -176,6 +177,7 @@ class Client(object):
     def __init__(self, network=None, nid=None, token=None):
         self.__info = list()
         self.__session = None
+        self.__storage_session = None
         self.__next_command = 0
 
         self.__state = ClientState(self)
@@ -183,6 +185,7 @@ class Client(object):
         self.__map = map.Map(self)
         self.__friends = []
         self.__inbox = inbox.Inbox(self)
+        self.__storage = storage.Storage(self)
 
         if network is not None or nid is not None:
             self.init(network, nid, token)
@@ -204,7 +207,7 @@ class Client(object):
         self.add_friends(friend)
         return self.get_friend(friend)
 
-    def __session_get(self, network=None, nid=None, token=None, auth=None):
+    def __get_session(self, network=None, nid=None, token=None, auth=None):
         if not network:
             network = Network.DEVICE
         if not nid:
@@ -220,11 +223,16 @@ class Client(object):
         rsp = net.send(command.SessionGet(ClientInfo(network, nid, token), auth))
         self.__session = rsp["session"]
 
-    def __session_update(self, auth=None):
+    def __update_session(self, auth=None):
         if auth is not None:
             self.__add_network(auth)
         rsp = net.send(command.SessionUpdate(self.__session, auth))
         self.__session = rsp["session"]
+
+    def __get_storage_session(self):
+        rsp = net.send(command.GetStorage(self.network, self.network_id, self.access_token)).response
+        self.__session = rsp["session"]
+        self.__storage_session = rsp["storage"]
 
     def get_auth_info(self, network=None):
         if not network:
@@ -312,12 +320,12 @@ class Client(object):
     def init(self, network=None, nid=None, token=None, auth=None):
         if self.__session is not None:
             raise RuntimeError("Client session is already inited.")
-        self.__session_get(network, nid, token, auth)
+        self.__get_session(network, nid, token, auth)
 
     def join(self, network=None, nid=None, token=None):
         if not self.__session:
             self.init()
-        self.__session_update(
+        self.__update_session(
             {
                 "network_code": str(network),
                 "network_id": str(nid),
@@ -331,8 +339,12 @@ class Client(object):
         self.__state.load()
 
     def get_session(self):
-        if not self.__session : self.__session_get()
+        if not self.__session : self.__get_session()
         return self.__session
+
+    def get_storage_session(self):
+        if self.__storage_session is None : self.__get_storage_session()
+        return self.__storage_session
 
     def get_next_command(self):
         self.__next_command += 1
@@ -350,10 +362,17 @@ class Client(object):
     def get_inbox(self):
         return self.__inbox
 
+    def get_storage(self):
+        return self.__storage
+
+    def set_storage(self, value):
+        self.__storage.assign(value)
+
     network = property(get_network)
     network_id = property(get_network_id)
     access_token = property(get_access_token)
     session = property(get_session)
+    storage_session = property(get_storage_session)
     next_command = property(get_next_command)
 
     state = property(get_state)
@@ -361,4 +380,5 @@ class Client(object):
     map = property(get_map)
     friends = property(get_friends)
     inbox = property(get_inbox)
+    storage = property(get_storage, set_storage)
 

@@ -141,6 +141,21 @@ class GetMessages(ServerCommand):
         ServerCommand.__init__(self, "/messages/unread", {"session": str(session)}, net.RequestMethod.POST)
 
 
+class GetStorage(ServerCommand):
+    def __init__(self, network, nid, token):
+        ServerCommand.__init__(self, "/storage/get", {"client_network": {"network_code": str(network), "network_id": str(nid), "access_token": str(token)}}, net.RequestMethod.POST)
+
+
+class FetchStorage(ServerCommand):
+    def __init__(self, storage, session):
+        ServerCommand.__init__(self, "/storage/fetch", {"storage": str(storage), "session": str(session)}, net.RequestMethod.POST)
+
+
+class UpdateStorage(ServerCommand):
+    def __init__(self, storage, session, data):
+        ServerCommand.__init__(self, "/storage/store", {"storage": str(storage), "session": str(session), "data": data.copy()}, net.RequestMethod.POST)
+
+
 class ResetState(ServerCommand):
     def __init__(self, session):
         ServerCommand.__init__(self, "/reset", {"session": session}, net.RequestMethod.POST)
