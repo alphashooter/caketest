@@ -1,6 +1,7 @@
 import re
 import net
 import command
+import Boosters
 
 
 class Limit:
@@ -177,6 +178,14 @@ class Level(object):
         else:
             lives = int(lives)
 
+        if boosters is not None:
+            for booster in boosters:
+                if not isinstance(booster, Boosters.Booster):
+                    booster = self.__client.boosters[booster]
+                if booster.count == 0:
+                    booster.buy()
+                booster.spend()
+
         cmd = None
         if self.get_limit_type() == Limit.MOVES:
             cmd = command.FinishLevelCommand(self.__client, self.qualified_id, score, used_moves=limit, used_lives=lives, used_boosters=boosters)
@@ -204,13 +213,19 @@ class Level(object):
 
         return self.finish(score, limit, lives, boosters)
 
-    def lose(self, completion=None, used_boosters=None):
+    def lose(self, completion=None, boosters=None):
         if completion is None:
             completion = None
-        if used_boosters is None:
-            used_boosters = 0
 
-        cmd = command.LoseLevelCommand(self.__client, self.qualified_id, completion, used_boosters)
+        if boosters is not None:
+            for booster in boosters:
+                if not isinstance(booster, Boosters.Booster):
+                    booster = self.__client.boosters[booster]
+                if booster.count == 0:
+                    booster.buy()
+                booster.spend()
+
+        cmd = command.LoseLevelCommand(self.__client, self.qualified_id, completion, boosters)
         net.send(cmd)
         return not cmd.rejected
 

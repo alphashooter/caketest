@@ -266,6 +266,14 @@ class BuyChapterUnlocksCommand(ExecuteCommand):
         ExecuteCommand.__init__(self, client, "buy_chapter_unlocks", {"network_code": network})
 
 
+class BuyBoosterCommand(ExecuteCommand):
+    def __init__(self, client, pack):
+        network = client.network
+        if not network in client.defs.social_networks:
+            network = "default"
+        ExecuteCommand.__init__(self, client, "buy_booster_pack", {"network_code": network, "name": str(pack)})
+
+
 class SendLifeCommand(ExecuteCommand):
     def __init__(self, client, uid):
         ExecuteCommand.__init__(self, client, "send_life", {"user_id": int(uid)})

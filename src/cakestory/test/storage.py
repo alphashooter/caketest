@@ -68,7 +68,9 @@ class Storage(utils.sdict):
     def load(self):
         rsp = net.send(command.FetchStorage(self.__client.storage_session, self.__client.session)).response
         self.__loaded = True
+        self.__lock()
         self.merge(rsp["data"])
+        self.__unlock()
 
     def upload(self):
         if self.__get_parent() is not None:

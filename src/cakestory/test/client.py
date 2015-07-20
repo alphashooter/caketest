@@ -6,6 +6,7 @@ import map
 import social
 import inbox
 import storage
+import Boosters
 
 
 class Network:
@@ -185,6 +186,7 @@ class Client(object):
         self.__map = map.Map(self)
         self.__friends = []
         self.__inbox = inbox.Inbox(self)
+        self.__boosters = Boosters.Boosters(self)
         self.__storage = storage.Storage(self)
 
         if network is not None or nid is not None:
@@ -368,6 +370,9 @@ class Client(object):
     def set_storage(self, value):
         self.__storage.assign(value)
 
+    def get_boosters(self):
+        return self.__boosters
+
     network = property(get_network)
     network_id = property(get_network_id)
     access_token = property(get_access_token)
@@ -380,5 +385,6 @@ class Client(object):
     map = property(get_map)
     friends = property(get_friends)
     inbox = property(get_inbox)
+    boosters = property(get_boosters)
     storage = property(get_storage, set_storage)
 
