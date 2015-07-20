@@ -2,7 +2,7 @@ import httplib
 import hashlib
 import json
 
-import plamee.utils
+import plamee.utils as utils
 
 
 class RequestMethod:
