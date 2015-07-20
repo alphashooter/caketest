@@ -20,6 +20,12 @@ class MessageType:
     def __str__(self):
         return self.value
 
+    def __eq__(self, other):
+        return self.value == str(other)
+
+    def __ne__(self, other):
+        return self.value != str(other)
+
 
 MessageType.LIFE = MessageType("life")
 MessageType.FUEL = MessageType("fuel")

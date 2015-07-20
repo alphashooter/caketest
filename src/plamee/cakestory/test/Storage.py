@@ -82,6 +82,9 @@ class Storage(utils.sdict):
                 Net.send(Commands.UpdateStorage(self.__client.storage_session, self.__client.session, self))
                 self.__unlock()
 
+    def reset(self):
+        self.assign({})
+
     def __getitem__(self, item):
         self.__autoload()
         return utils.sdict.__getitem__(self, item)

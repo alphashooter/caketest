@@ -52,6 +52,9 @@ class ClientState(object):
     def update(self):
         self.load()
 
+    def reset(self):
+        self.merge(Net.send(Commands.ResetState(self.__client.session)).response)
+
     def merge(self, data):
         if self.__data:
             utils.merge_objects(self.__data, data)
@@ -338,8 +341,9 @@ class Client(object):
         self.__state.load()
 
     def reset(self):
-        Net.send(Commands.ResetState(self.session))
-        self.__state.load()
+        self.inbox.delete_all()
+        self.state.reset()
+        self.storage.reset()
 
     def get_session(self):
         if not self.__session : self.__get_session()
