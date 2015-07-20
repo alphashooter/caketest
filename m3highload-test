@@ -1,0 +1,12 @@
+#!/bin/sh
+
+SCRIPT=/tmp/m3highload-test.py
+ROOT=`pwd`
+> $SCRIPT
+echo "import sys" >> $SCRIPT
+echo "sys.path.extend(['$ROOT/src/'])" >> $SCRIPT
+echo "import main" >> $SCRIPT
+
+python $SCRIPT
+
+rm -rf $SCRIPT
