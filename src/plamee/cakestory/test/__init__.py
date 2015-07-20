@@ -1,9 +1,10 @@
-from Client import *
-from Level import *
-from Map import *
-from Social import *
-from Inbox import *
-from Boosters import *
+from plamee.cakestory import *
 
-import Net
-import Commands
+Net.connect("m3highload-master.test.nsk.plamee.com")
+
+import fuel_request
+import bonus_score
+
+def run() :
+    fuel_request.run()
+    bonus_score.run()
