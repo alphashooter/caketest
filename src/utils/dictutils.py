@@ -5,16 +5,17 @@ class sdict(dict):
 
     def __init__(self, iterable=None, **kwargs):
         dict.__init__(self)
-        for key in iterable:
-            value = iterable[key]
-            if isinstance(value, dict):
-                value = sdict(value)
-            self[key] = value
-        for key in kwargs:
-            value = kwargs[key]
-            if isinstance(value, dict):
-                value = sdict(value)
-            self[key] = value
+        if iterable is not None:
+            for key in iterable:
+                value = iterable[key]
+                if isinstance(value, dict):
+                    value = sdict(value)
+                self[key] = value
+            for key in kwargs:
+                value = kwargs[key]
+                if isinstance(value, dict):
+                    value = sdict(value)
+                self[key] = value
 
     def copy(self):
         return sdict(self)
