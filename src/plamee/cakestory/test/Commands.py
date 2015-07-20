@@ -1,6 +1,8 @@
 import re
+
+import plamee.utils as utils
 import Net
-import utils
+
 
 class ServerCommand(object):
     def __init__(self, name, data=None, method=Net.RequestMethod.POST):

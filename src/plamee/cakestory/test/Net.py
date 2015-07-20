@@ -1,7 +1,9 @@
 import httplib
 import hashlib
 import json
-import utils
+
+import plamee.utils
+
 
 class RequestMethod:
     POST = "POST"

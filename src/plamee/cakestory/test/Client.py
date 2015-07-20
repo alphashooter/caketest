@@ -1,6 +1,6 @@
 import hashlib
-import utils
 
+import plamee.utils as utils
 import Net
 import Commands
 import Map

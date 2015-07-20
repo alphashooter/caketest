@@ -1,4 +1,4 @@
-from cakestory.test import *
+from plamee.cakestory.test import *
 
 Net.connect("m3highload-master.test.nsk.plamee.com")
 

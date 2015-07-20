@@ -1,6 +1,7 @@
 import Net
 import Commands
-import utils
+import plamee.utils as utils
+
 
 class Storage(utils.sdict):
     def __init__(self, client, data=None, parent=None):

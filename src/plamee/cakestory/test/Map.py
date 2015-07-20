@@ -1,4 +1,5 @@
 import re
+
 import Net
 import Commands
 import Level
@@ -30,7 +31,8 @@ class Chapter(object):
         raise AttributeError()
 
     def parse(self, data):
-        self.__levels = list(Level.Level(self.__client, self, data["levels"][i]["id"], data["levels"][i]["hash"]) for i in range(len(data["levels"])))
+        self.__levels = list(
+            Level.Level(self.__client, self, data["levels"][i]["id"], data["levels"][i]["hash"]) for i in range(len(data["levels"])))
         self.__bonus = list()
         if "bonus_level" in data:
             self.__bonus.append(Level.Level(self.__client, self, data["bonus_level"]["id"], data["bonus_level"]["hash"], True))
