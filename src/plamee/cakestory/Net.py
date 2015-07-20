@@ -37,9 +37,9 @@ class Connection:
             data = {}
         data["token"] = Connection.get_message_token(data, Connection.SECRET_TOKEN)
 
-        print "Server request\n" \
-              "Command: %s\n" \
-              "Data:    %s\n" % (command.name, json.dumps(data))
+        #print "Server request\n" \
+        #      "Command: %s\n" \
+        #      "Data:    %s\n" % (command.name, json.dumps(data))
 
         self.__connection.request("POST", command.name, json.dumps(data), {"Content-Type": "application/json"})
 
@@ -48,8 +48,8 @@ class Connection:
             raise RuntimeError("Invalid server response status %d: %s" % (response.status, response.reason))
         data = response.read()
 
-        print "Server response\n" \
-              "Data:    %s\n" % data
+        #print "Server response\n" \
+        #      "Data:    %s\n" % data
 
         command.process(utils.sdict(json.loads(data)))
         return command
@@ -59,9 +59,9 @@ class Connection:
 
         if data:
             query = "&".join("%s=%s" % (key, str(data[key])) for key in data)
-            print "Server request\n" \
-                  "Command: %s\n" \
-                  "Data:    %s\n" % (command.name, query)
+            #print "Server request\n" \
+            #      "Command: %s\n" \
+            #      "Data:    %s\n" % (command.name, query)
             self.__connection.request("GET", "%s?%s" % (command.name, query))
         else:
             print "Server request:\n" \
@@ -74,8 +74,8 @@ class Connection:
             raise RuntimeError("Invalid server response status %d: %s" % (response.status, response.reason))
         data = response.read()
 
-        print "Server response\n" \
-              "Data:    %s\n" % data
+        #print "Server response\n" \
+        #      "Data:    %s\n" % data
 
         command.process(utils.sdict(json.loads(data)))
         return command
