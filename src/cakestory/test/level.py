@@ -1,6 +1,6 @@
 import re
-import net
-import command
+import Net
+import Commands
 import Boosters
 
 
@@ -159,7 +159,7 @@ class Level(object):
         self.__data = data
 
     def load(self):
-        self.parse(net.send(command.GetLevel(self.hash)).response)
+        self.parse(Net.send(Commands.GetLevel(self.hash)).response)
 
     def finish(self, score=None, limit=None, lives=None, boosters=None):
         if score is None:
@@ -188,13 +188,13 @@ class Level(object):
 
         cmd = None
         if self.get_limit_type() == Limit.MOVES:
-            cmd = command.FinishLevelCommand(self.__client, self.qualified_id, score, used_moves=limit, used_lives=lives, used_boosters=boosters)
+            cmd = Commands.FinishLevelCommand(self.__client, self.qualified_id, score, used_moves=limit, used_lives=lives, used_boosters=boosters)
         elif self.get_limit_type() == Limit.TIME:
-            cmd = command.FinishLevelCommand(self.__client, self.qualified_id, score, used_time=limit, used_lives=lives, used_boosters=boosters)
+            cmd = Commands.FinishLevelCommand(self.__client, self.qualified_id, score, used_time=limit, used_lives=lives, used_boosters=boosters)
         else:
             raise RuntimeError("Unknown limit type %s." % limit)
 
-        net.send(cmd)
+        Net.send(cmd)
         return not cmd.rejected
 
     def force_finish(self, score=None, limit=None, lives=None, boosters=None):
@@ -225,8 +225,8 @@ class Level(object):
                     booster.buy()
                 booster.spend()
 
-        cmd = command.LoseLevelCommand(self.__client, self.qualified_id, completion, boosters)
-        net.send(cmd)
+        cmd = Commands.LoseLevelCommand(self.__client, self.qualified_id, completion, boosters)
+        Net.send(cmd)
         return not cmd.rejected
 
     def force_lose(self, completion=None, used_boosters=None):
@@ -328,7 +328,7 @@ class Level(object):
         return self.__client.state.progress > self.id
 
     def get_user_score(self):
-        rsp = net.send(command.QueryLevels(self.__client.session, [self.qualified_id]))
+        rsp = Net.send(Commands.QueryLevels(self.__client.session, [self.qualified_id]))
         if self.qualified_id in rsp:
             return rsp[self.qualified_id]
         else:
@@ -352,7 +352,7 @@ class Level(object):
         return friend.progress > self.id
 
     def get_friend_score(self, friend):
-        rsp = net.send(command.QueryUsersLevels(self.__client.session, [self.qualified_id], [friend.user_id]))
+        rsp = Net.send(Commands.QueryUsersLevels(self.__client.session, [self.qualified_id], [friend.user_id]))
         if self.qualified_id in rsp and friend.user_id in rsp[self.qualified_id]:
             return rsp[self.qualified_id][friend.user_id]
         return 0

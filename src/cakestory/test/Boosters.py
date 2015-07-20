@@ -1,5 +1,5 @@
-import net
-import command
+import Net
+import Commands
 
 class BoosterType:
     NAMES = [
@@ -70,7 +70,7 @@ class Booster(object):
     def buy(self, count=1):
         packs_count = self.__convert_count(count)
         for i in range(packs_count):
-            if not net.send(command.BuyBoosterCommand(self.__client, self.__type)).rejected:
+            if not Net.send(Commands.BuyBoosterCommand(self.__client, self.__type)).rejected:
                 self.set_count(self.get_count() + self.pack_count)
             else:
                 return False

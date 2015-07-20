@@ -1,5 +1,5 @@
-import net
-import command
+import Net
+import Commands
 
 
 class Friend(object):
@@ -21,47 +21,47 @@ class Friend(object):
 
     def get_user_id(self):
         if self.__uid is None:
-            rsp = net.send(command.QueryUsers(self.__client.session, self.network, [self.network_id]))
+            rsp = Net.send(Commands.QueryUsers(self.__client.session, self.network, [self.network_id]))
             if self.network in rsp and self.network_id in rsp[self.network]:
                 self.__uid = int(rsp[self.network][self.network_id])
         return self.__uid
 
     def send_life(self):
         self.__assert_exist()
-        return not net.send(command.SendLifeCommand(self.__client, self.user_id)).rejected
+        return not Net.send(Commands.SendLifeCommand(self.__client, self.user_id)).rejected
 
     def send_help(self, level=None):
         self.__assert_exist()
         if level is None:
             level = self.progress
-        return not net.send(command.SendHelpCommand(self.__client, self.user_id, level)).rejected
+        return not Net.send(Commands.SendHelpCommand(self.__client, self.user_id, level)).rejected
 
     def request_life(self):
         self.__assert_exist()
-        return not net.send(command.RequestLifeCommand(self.__client, self.user_id)).rejected
+        return not Net.send(Commands.RequestLifeCommand(self.__client, self.user_id)).rejected
 
     def request_fuel(self):
         self.__assert_exist()
-        return not net.send(command.RequestFuelCommand(self.__client, self.user_id)).rejected
+        return not Net.send(Commands.RequestFuelCommand(self.__client, self.user_id)).rejected
 
     def get_exist(self):
         return self.user_id is not None
 
     def get_progress(self):
         self.__assert_exist()
-        rsp = net.send(command.QueryUsersProgress(self.__client.session, [self.user_id])).response
+        rsp = Net.send(Commands.QueryUsersProgress(self.__client.session, [self.user_id])).response
         return int(rsp[self.user_id])
 
     def get_last_activity(self):
         self.__assert_exist()
-        rsp = net.send(command.QueryUsersTime(self.__client.session, [self.user_id]))
+        rsp = Net.send(Commands.QueryUsersTime(self.__client.session, [self.user_id]))
         if self.user_id in rsp and "last_activity" in rsp[self.user_id]:
             return int(rsp[self.user_id]["last_activity"])
         return None
 
     def get_last_level_activity(self):
         self.__assert_exist()
-        rsp = net.send(command.QueryUsersTime(self.__client.session, [self.user_id]))
+        rsp = Net.send(Commands.QueryUsersTime(self.__client.session, [self.user_id]))
         if self.user_id in rsp and "finish_level_time" in rsp[self.user_id]:
             return int(rsp[self.user_id]["finish_level_time"])
         return None

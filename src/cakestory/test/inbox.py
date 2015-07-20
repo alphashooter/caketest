@@ -1,5 +1,5 @@
-import net
-import command
+import Net
+import Commands
 
 
 class MessageType:
@@ -38,10 +38,10 @@ class Message(object):
         self.__date = int(data["created_at"])
 
     def read(self):
-        return not net.send(command.ReadMessageCommand(self.__client, self.__id)).rejected
+        return not Net.send(Commands.ReadMessageCommand(self.__client, self.__id)).rejected
 
     def delete(self):
-        return not net.send(command.DeleteMessagesCommand(self.__client, [self.__id])).rejected
+        return not Net.send(Commands.DeleteMessagesCommand(self.__client, [self.__id])).rejected
 
     def get_id(self):
         return self.__id
@@ -73,7 +73,7 @@ class Inbox(object):
         return len(self.messages) == 0
 
     def get_messages(self):
-        response = net.send(command.GetMessages(self.__client.session)).response
+        response = Net.send(Commands.GetMessages(self.__client.session)).response
         messages = []
         for message in response["messages"]:
             messages.append(Message(self.__client, message))

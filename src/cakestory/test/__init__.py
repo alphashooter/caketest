@@ -1,9 +1,9 @@
-from client import *
-from level import *
-from map import *
-from social import *
-from inbox import *
+from Client import *
+from Level import *
+from Map import *
+from Social import *
+from Inbox import *
 from Boosters import *
 
-import net
-import command
+import Net
+import Commands

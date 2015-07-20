@@ -1,11 +1,12 @@
 import hashlib
 import utils
-import net
-import command
-import map
-import social
-import inbox
-import storage
+
+import Net
+import Commands
+import Map
+import Social
+import Inbox
+import Storage
 import Boosters
 
 
@@ -46,7 +47,7 @@ class ClientState(object):
         if not self.is_loaded : self.load()
 
     def load(self):
-        self.merge(net.send(command.GetState(self.__client.session)).response)
+        self.merge(Net.send(Commands.GetState(self.__client.session)).response)
 
     def update(self):
         self.load()
@@ -77,8 +78,8 @@ class ClientState(object):
 
     def add_real_balance(self, value):
         if value > 0:
-            cmd = command.AddRealBalanceCommand(self.__client, value)
-            net.send(cmd)
+            cmd = Commands.AddRealBalanceCommand(self.__client, value)
+            Net.send(cmd)
             if cmd.rejected:
                 raise RuntimeError("Cannot change real balance.")
 
@@ -91,8 +92,8 @@ class ClientState(object):
 
     def add_game_balance(self, value):
         if value > 0:
-            cmd = command.AddGameBalanceCommand(self.__client, value)
-            net.send(cmd)
+            cmd = Commands.AddGameBalanceCommand(self.__client, value)
+            Net.send(cmd)
             if cmd.rejected:
                 raise RuntimeError("Cannot change game balance.")
 
@@ -130,7 +131,7 @@ class ClientDefs(object):
             self.__data = data
 
     def load(self):
-        self.merge(net.send(command.GetDefs(self.__client.state.defs_hash)).response)
+        self.merge(Net.send(Commands.GetDefs(self.__client.state.defs_hash)).response)
 
     def update(self):
         self.load()
@@ -183,11 +184,11 @@ class Client(object):
 
         self.__state = ClientState(self)
         self.__defs = ClientDefs(self)
-        self.__map = map.Map(self)
+        self.__map = Map.Map(self)
         self.__friends = []
-        self.__inbox = inbox.Inbox(self)
+        self.__inbox = Inbox.Inbox(self)
         self.__boosters = Boosters.Boosters(self)
-        self.__storage = storage.Storage(self)
+        self.__storage = Storage.Storage(self)
 
         if network is not None or nid is not None:
             self.init(network, nid, token)
@@ -222,17 +223,17 @@ class Client(object):
         if auth is not None:
             self.__add_network(auth)
 
-        rsp = net.send(command.SessionGet(ClientInfo(network, nid, token), auth))
+        rsp = Net.send(Commands.SessionGet(ClientInfo(network, nid, token), auth))
         self.__session = rsp["session"]
 
     def __update_session(self, auth=None):
         if auth is not None:
             self.__add_network(auth)
-        rsp = net.send(command.SessionUpdate(self.__session, auth))
+        rsp = Net.send(Commands.SessionUpdate(self.__session, auth))
         self.__session = rsp["session"]
 
     def __get_storage_session(self):
-        rsp = net.send(command.GetStorage(self.network, self.network_id, self.access_token)).response
+        rsp = Net.send(Commands.GetStorage(self.network, self.network_id, self.access_token)).response
         self.__session = rsp["session"]
         self.__storage_session = rsp["storage"]
 
@@ -273,7 +274,7 @@ class Client(object):
         else:
             id = None
 
-            if isinstance(descriptor, social.Friend):
+            if isinstance(descriptor, Social.Friend):
                 id = descriptor.network_id
             else:
                 id = descriptor
@@ -300,11 +301,11 @@ class Client(object):
                     continue
 
                 if isinstance(arg, Client):
-                    self.__friends.append(social.Friend(self, arg.network, arg.network_id))
-                elif isinstance(arg, social.Friend):
+                    self.__friends.append(Social.Friend(self, arg.network, arg.network_id))
+                elif isinstance(arg, Social.Friend):
                     self.__friends.append(arg)
                 else:
-                    self.__friends.append(social.Friend(self, self.network, str(arg)))
+                    self.__friends.append(Social.Friend(self, self.network, str(arg)))
 
     def send_life(self, friend):
         return self.__convert_friend(friend).send_life()
@@ -337,7 +338,7 @@ class Client(object):
         self.__state.load()
 
     def reset(self):
-        net.send(command.ResetState(self.session))
+        Net.send(Commands.ResetState(self.session))
         self.__state.load()
 
     def get_session(self):

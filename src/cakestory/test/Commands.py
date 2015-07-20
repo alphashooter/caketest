@@ -1,9 +1,9 @@
 import re
-import net
+import Net
 import utils
 
 class ServerCommand(object):
-    def __init__(self, name, data=None, method=net.RequestMethod.POST):
+    def __init__(self, name, data=None, method=Net.RequestMethod.POST):
         self.name = name
         self.data = data
         self.method = method
@@ -40,7 +40,7 @@ class SessionGet(ServerCommand):
                 "network_id": auth.network_id,
                 "access_token": auth.access_token
             }
-        ServerCommand.__init__(self, "/session/get", data, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/session/get", data, Net.RequestMethod.POST)
 
 
 class SessionUpdate(ServerCommand):
@@ -52,32 +52,32 @@ class SessionUpdate(ServerCommand):
                 "network_id": auth.network_id,
                 "access_token": auth.access_token
             }
-        ServerCommand.__init__(self, "/session/update", data, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/session/update", data, Net.RequestMethod.POST)
 
 
 class GetState(ServerCommand):
     def __init__(self, session):
-        ServerCommand.__init__(self, "/init", {"session": session}, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/init", {"session": session}, Net.RequestMethod.POST)
 
 
 class GetDefs(ServerCommand):
     def __init__(self, hash):
-        ServerCommand.__init__(self, "/defs", {"hash": hash}, net.RequestMethod.GET)
+        ServerCommand.__init__(self, "/defs", {"hash": hash}, Net.RequestMethod.GET)
 
 
 class GetLevel(ServerCommand):
     def __init__(self, hash):
-        ServerCommand.__init__(self, "/map/level", {"hash": hash}, net.RequestMethod.GET)
+        ServerCommand.__init__(self, "/map/level", {"hash": hash}, Net.RequestMethod.GET)
 
 
 class GetChapter(ServerCommand):
     def __init__(self, hash):
-        ServerCommand.__init__(self, "/map/chapter", {"hash": hash}, net.RequestMethod.GET)
+        ServerCommand.__init__(self, "/map/chapter", {"hash": hash}, Net.RequestMethod.GET)
 
 
 class QueryLevels(ServerCommand):
     def __init__(self, session, levels):
-        ServerCommand.__init__(self, "/query/levels", {"session": session, "levels": levels[:]}, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/query/levels", {"session": session, "levels": levels[:]}, Net.RequestMethod.POST)
 
 
 class QueryUsers(ServerCommand):
@@ -92,7 +92,7 @@ class QueryUsers(ServerCommand):
                 "session": session,
                 "credentials": credentials
             },
-            net.RequestMethod.POST
+            Net.RequestMethod.POST
         )
 
 
@@ -105,7 +105,7 @@ class QueryUsersProgress(ServerCommand):
                 "session": session,
                 "users": uids[:]
             },
-            net.RequestMethod.POST
+            Net.RequestMethod.POST
         )
 
 
@@ -119,7 +119,7 @@ class QueryUsersLevels(ServerCommand):
                 "levels": levels[:],
                 "users": uids[:]
             },
-            net.RequestMethod.POST
+            Net.RequestMethod.POST
         )
 
 
@@ -132,33 +132,33 @@ class QueryUsersTime(ServerCommand):
                 "session": session,
                 "users": uids[:]
             },
-            net.RequestMethod.POST
+            Net.RequestMethod.POST
         )
 
 
 class GetMessages(ServerCommand):
     def __init__(self, session):
-        ServerCommand.__init__(self, "/messages/unread", {"session": str(session)}, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/messages/unread", {"session": str(session)}, Net.RequestMethod.POST)
 
 
 class GetStorage(ServerCommand):
     def __init__(self, network, nid, token):
-        ServerCommand.__init__(self, "/storage/get", {"client_network": {"network_code": str(network), "network_id": str(nid), "access_token": str(token)}}, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/storage/get", {"client_network": {"network_code": str(network), "network_id": str(nid), "access_token": str(token)}}, Net.RequestMethod.POST)
 
 
 class FetchStorage(ServerCommand):
     def __init__(self, storage, session):
-        ServerCommand.__init__(self, "/storage/fetch", {"storage": str(storage), "session": str(session)}, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/storage/fetch", {"storage": str(storage), "session": str(session)}, Net.RequestMethod.POST)
 
 
 class UpdateStorage(ServerCommand):
     def __init__(self, storage, session, data):
-        ServerCommand.__init__(self, "/storage/store", {"storage": str(storage), "session": str(session), "data": data.copy()}, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/storage/store", {"storage": str(storage), "session": str(session), "data": data.copy()}, Net.RequestMethod.POST)
 
 
 class ResetState(ServerCommand):
     def __init__(self, session):
-        ServerCommand.__init__(self, "/reset", {"session": session}, net.RequestMethod.POST)
+        ServerCommand.__init__(self, "/reset", {"session": session}, Net.RequestMethod.POST)
 
 
 class ExecuteCommand(ServerCommand):
@@ -179,7 +179,7 @@ class ExecuteCommand(ServerCommand):
                     }
                 ]
             },
-            net.RequestMethod.POST
+            Net.RequestMethod.POST
         )
 
     def __get_client(self):

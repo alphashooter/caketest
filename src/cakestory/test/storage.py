@@ -1,5 +1,5 @@
-import net
-import command
+import Net
+import Commands
 import utils
 
 class Storage(utils.sdict):
@@ -66,7 +66,7 @@ class Storage(utils.sdict):
         self.upload()
 
     def load(self):
-        rsp = net.send(command.FetchStorage(self.__client.storage_session, self.__client.session)).response
+        rsp = Net.send(Commands.FetchStorage(self.__client.storage_session, self.__client.session)).response
         self.__loaded = True
         self.__lock()
         self.merge(rsp["data"])
@@ -78,7 +78,7 @@ class Storage(utils.sdict):
         else:
             if not self.__is_locked():
                 self.__lock()
-                net.send(command.UpdateStorage(self.__client.storage_session, self.__client.session, self))
+                Net.send(Commands.UpdateStorage(self.__client.storage_session, self.__client.session, self))
                 self.__unlock()
 
     def __getitem__(self, item):

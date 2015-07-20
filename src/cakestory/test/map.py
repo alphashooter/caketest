@@ -1,7 +1,7 @@
 import re
-import net
-import command
-import level
+import Net
+import Commands
+import Level
 
 
 class Chapter(object):
@@ -30,17 +30,17 @@ class Chapter(object):
         raise AttributeError()
 
     def parse(self, data):
-        self.__levels = list(level.Level(self.__client, self, data["levels"][i]["id"], data["levels"][i]["hash"]) for i in range(len(data["levels"])))
+        self.__levels = list(Level.Level(self.__client, self, data["levels"][i]["id"], data["levels"][i]["hash"]) for i in range(len(data["levels"])))
         self.__bonus = list()
         if "bonus_level" in data:
-            self.__bonus.append(level.Level(self.__client, self, data["bonus_level"]["id"], data["bonus_level"]["hash"], True))
+            self.__bonus.append(Level.Level(self.__client, self, data["bonus_level"]["id"], data["bonus_level"]["hash"], True))
 
     def load(self, separately=False):
         if separately:
             for i in range(len(self.__levels)):
                 self.__levels[i].load()
         else:
-            rsp = net.send(command.GetChapter(self.hash)).response
+            rsp = Net.send(Commands.GetChapter(self.hash)).response
             for key in list(rsp.keys()):
                 self.get_level_by_hash(key).parse(rsp[key])
 
@@ -66,8 +66,8 @@ class Chapter(object):
         return self.finish()
 
     def buy_unlocks(self):
-        cmd = command.BuyChapterUnlocksCommand(self.__client)
-        net.send(cmd)
+        cmd = Commands.BuyChapterUnlocksCommand(self.__client)
+        Net.send(cmd)
         return not cmd.rejected
 
     def force_buy_unlocks(self):
@@ -76,8 +76,8 @@ class Chapter(object):
         return self.buy_unlocks()
 
     def unlock(self):
-        cmd = command.UnlockChapterCommand(self.__client)
-        net.send(cmd)
+        cmd = Commands.UnlockChapterCommand(self.__client)
+        Net.send(cmd)
         return not cmd.rejected
 
     def force_unlock(self):
@@ -173,7 +173,7 @@ class Chapter(object):
         return self.get_level(ids[len(ids) - 1])
 
     def get_levels(self):
-        return sorted(self.__levels[:], key=level.Level.get_id)
+        return sorted(self.__levels[:], key=Level.Level.get_id)
 
     def get_bonus_level(self, id=None):
         if not id :
@@ -184,7 +184,7 @@ class Chapter(object):
         return None
 
     def get_bonus_levels(self):
-        return sorted(self.__bonus[:], key=level.Level.get_id)
+        return sorted(self.__bonus[:], key=Level.Level.get_id)
 
     def get_unlocks(self):
         if self.qualified_id in self.__client.state.chapters and "unlocks" in self.__client.state.chapters[self.qualified_id]:
