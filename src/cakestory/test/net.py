@@ -90,7 +90,7 @@ class Connection:
 __connection = None
 
 
-def connection(host):
+def connect(host):
     global __connection
     __connection = Connection(host)
 
