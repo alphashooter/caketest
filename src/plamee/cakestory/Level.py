@@ -162,7 +162,7 @@ class Level(object):
     def load(self):
         self.parse(Net.send(Commands.GetLevel(self.hash)).response)
 
-    def finish(self, score=None, limit=None, lives=None, boosters=None):
+    def finish(self, score=None, limit=None, lives=None, boosters=None, rewards=None):
         if score is None:
             score = self.get_star(Star.FIRST)
         elif isinstance(score, Star):
@@ -188,12 +188,15 @@ class Level(object):
                 booster.spend()
 
         cmd = None
-        if self.get_limit_type() == Limit.MOVES:
-            cmd = Commands.FinishLevelCommand(self.__client, self.qualified_id, score, used_moves=limit, used_lives=lives, used_boosters=boosters)
-        elif self.get_limit_type() == Limit.TIME:
-            cmd = Commands.FinishLevelCommand(self.__client, self.qualified_id, score, used_time=limit, used_lives=lives, used_boosters=boosters)
+        if self.is_bonus:
+            cmd = Commands.FinishBonusLevelCommand(self.__client, self.qualified_id, score, rewards)
         else:
-            raise RuntimeError("Unknown limit type %s." % limit)
+            if self.get_limit_type() == Limit.MOVES:
+                cmd = Commands.FinishLevelCommand(self.__client, self.qualified_id, score, used_moves=limit, used_lives=lives, used_boosters=boosters)
+            elif self.get_limit_type() == Limit.TIME:
+                cmd = Commands.FinishLevelCommand(self.__client, self.qualified_id, score, used_time=limit, used_lives=lives, used_boosters=boosters)
+            else:
+                raise RuntimeError("Unknown limit type %s." % limit)
 
         Net.send(cmd)
         return not cmd.rejected
@@ -350,15 +353,24 @@ class Level(object):
         return Star(star)
 
     def get_friend_finished(self, friend):
+        self.__client.add_friends(friend)
+        friend = self.__client.get_friend(friend)
+
         return friend.progress > self.id
 
     def get_friend_score(self, friend):
+        self.__client.add_friends(friend)
+        friend = self.__client.get_friend(friend)
+
         rsp = Net.send(Commands.QueryUsersLevels(self.__client.session, [self.qualified_id], [friend.user_id]))
         if self.qualified_id in rsp and friend.user_id in rsp[self.qualified_id]:
             return rsp[self.qualified_id][friend.user_id]
         return 0
 
     def get_friend_stars(self, friend):
+        self.__client.add_friends(friend)
+        friend = self.__client.get_friend(friend)
+
         score = self.get_friend_score(friend)
         star = 0
         for star in [1, 2, 3]:

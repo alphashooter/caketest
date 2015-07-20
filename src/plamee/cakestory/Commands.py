@@ -115,7 +115,7 @@ class QueryUsersLevels(ServerCommand):
     def __init__(self, session, levels, uids):
         ServerCommand.__init__(
             self,
-            "/query/users/progress",
+            "/query/users/levels",
             {
                 "session": session,
                 "levels": levels[:],
@@ -201,12 +201,8 @@ class ExecuteCommand(ServerCommand):
 
 class FinishLevelCommand(ExecuteCommand):
     def __init__(self, client, level, score, used_moves=None, used_time=None, used_lives=None, used_boosters=None):
-        level = str(level)
-        if re.match(r"^\d+$", level):
-            level = int(level)
-
         params = {
-            "level": level,
+            "level": int(level),
             "score": int(score)
         }
         if used_moves is not None:
@@ -225,6 +221,21 @@ class FinishLevelCommand(ExecuteCommand):
                 params["used_boosters"] = utils.sdict(used_boosters)
 
         ExecuteCommand.__init__(self, client, "finish_level", params)
+
+
+class FinishBonusLevelCommand(ExecuteCommand):
+    def __init__(self, client, level, score, rewards=None):
+        if rewards is None:
+            rewards = []
+
+        params = {
+            "level": str(level),
+            "score": int(score),
+            "rewards": list(rewards)
+        }
+
+        ExecuteCommand.__init__(self, client, "finish_bonus_level", params)
+
 
 class LoseLevelCommand(ExecuteCommand):
     def __init__(self, client, level, completion=None, used_boosters=None):
