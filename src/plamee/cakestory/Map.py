@@ -312,12 +312,17 @@ class Map(object):
 
     def get_chapter_current(self):
         self.__autoinit()
-        current = self.current_level.chapter
-        prev = current.prev
-        if prev is None or prev.is_unlocked:
-            return current
+        current_level = self.current_level
+        current_chapter = current_level.chapter if current_level is not None else None
+
+        if current_chapter is not None:
+            prev = current_chapter.prev
+            if prev is None or prev.is_unlocked:
+                return current_chapter
+            else:
+                return prev
         else:
-            return prev
+            return None
 
     def get_chapters(self):
         self.__autoinit()
