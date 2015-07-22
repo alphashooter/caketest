@@ -3,6 +3,10 @@ import Commands
 
 
 class MessageType:
+    """
+    Enumeration class which contains common message types.
+    """
+
     __VALUES = ["life", "fuel", "booster", "request_life", "request_fuel"]
 
     LIFE_REQUEST = None
@@ -35,6 +39,10 @@ MessageType.FUEL_REQUEST = MessageType("request_fuel")
 
 
 class Message(object):
+    """
+    Class message provides access to inbox messages.
+    """
+
     def __init__(self, client, data):
         self.__client = client
         self.__id = int(data["id"])
@@ -44,24 +52,50 @@ class Message(object):
         self.__date = int(data["created_at"])
 
     def read(self):
+        """
+        Marks message as read.
+        """
         return not Net.send(Commands.ReadMessageCommand(self.__client, self.__id)).rejected
 
     def delete(self):
+        """
+        Deletes message from inbox.
+        """
         return not Net.send(Commands.DeleteMessagesCommand(self.__client, [self.__id])).rejected
 
     def get_id(self):
+        """
+        :return: Message id.
+        :rtype: int
+        """
         return self.__id
 
     def get_type(self):
+        """
+        :return: Message type.
+        :rtype: MessageType
+        """
         return self.__type
 
     def get_data(self):
+        """
+        :return: Message optional data.
+        :type: dict
+        """
         return self.__data
 
     def get_date(self):
+        """
+        :return: Message send time.
+        :rtype: int
+        """
         return self.__date
 
     def get_friend_id(self):
+        """
+        :return: Message sender's game user id.
+        :rtype: int
+        """
         return self.__from
 
     id = property(get_id)
@@ -72,13 +106,25 @@ class Message(object):
 
 
 class Inbox(object):
+    """
+    Class Inbox provides access to client's inbox.
+    """
+
     def __init__(self, client):
         self.__client = client
 
     def get_is_empty(self):
+        """
+        :return: True if inbox has no messages, False otherwise.
+        :rtype: bool
+        """
         return len(self.messages) == 0
 
     def get_messages(self):
+        """
+        :return: All messages from inbox.
+        :rtype: list
+        """
         response = Net.send(Commands.GetMessages(self.__client.session)).response
         messages = []
         for message in response["messages"]:
@@ -86,6 +132,9 @@ class Inbox(object):
         return messages
 
     def read_all(self):
+        """
+        Marks all messages from inbox as read.
+        """
         result = True
         messages = self.messages
         for message in messages:
@@ -93,6 +142,9 @@ class Inbox(object):
         return result
 
     def delete_all(self):
+        """
+        Deletes all messages from inbox.
+        """
         result = True
         messages = self.messages
         for message in messages:
