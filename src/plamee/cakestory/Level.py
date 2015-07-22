@@ -126,6 +126,10 @@ Star.THIRD = Star(3)
 
 
 class Level(object):
+    """
+    Class Level provides access to level information and methods.
+    """
+
     def __init__(self, client, chapter, id, hash, bonus=False, data=None):
         self.__client = client
         self.__chapter = chapter
@@ -157,12 +161,25 @@ class Level(object):
         if not self.is_loaded : self.load()
 
     def parse(self, data):
+        """
+        Parses level from JS-like object.
+        """
         self.__data = data
 
     def load(self):
+        """
+        Loads level from server.
+        """
         self.parse(Net.send(Commands.GetLevel(self.hash)).response)
 
     def finish(self, score=None, limit=None, lives=None, boosters=None, rewards=None):
+        """
+        Attempts to finish level.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
+
         if score is None:
             score = self.get_star(Star.FIRST)
         elif isinstance(score, Star):
@@ -202,6 +219,16 @@ class Level(object):
         return not cmd.rejected
 
     def force_finish(self, score=None, limit=None, lives=None, boosters=None):
+        """
+        Forces attempt to finish level.
+
+        If the corresponding chapter is locked, forces its unlock.
+
+        If previous levels are not finished, forces its finish.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         if self.chapter.is_locked:
             if not self.chapter.force_unlock():
                 return False
@@ -218,6 +245,12 @@ class Level(object):
         return self.finish(score, limit, lives, boosters)
 
     def lose(self, completion=None, boosters=None):
+        """
+        Attemps to lose level.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         if completion is None:
             completion = None
 
@@ -234,6 +267,16 @@ class Level(object):
         return not cmd.rejected
 
     def force_lose(self, completion=None, used_boosters=None):
+        """
+        Forces attempt to lose level.
+
+        If the corresponding chapter is locked, forces its unlock.
+
+        If previous levels are not finished, forces its finish.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         if self.chapter.is_locked:
             if not self.chapter.force_unlock():
                 return False
@@ -250,21 +293,45 @@ class Level(object):
         return self.lose(completion, used_boosters)
 
     def get_id(self):
+        """
+        :return: Level id.
+        :rtype: int
+        """
         return self.__id
 
     def get_qualified_id(self):
+        """
+        :return: Level qualified id.
+        :rtype: str
+        """
         return self.__qid
 
     def get_hash(self):
+        """
+        :return: Level hash.
+        :rtype: str
+        """
         return self.__hash
 
     def get_chapter(self):
+        """
+        :return: The corresponding chapter.
+        :rtype: Map.Chapter
+        """
         return self.__chapter
 
     def get_map(self):
+        """
+        :return: The corresponding map object.
+        :rtype: Map.Map
+        """
         return self.__chapter.map
 
     def get_next(self):
+        """
+        :return: The next level if exists, None otherwise.
+        :rtype: Level
+        """
         if self.is_last:
             return None
 
@@ -275,6 +342,10 @@ class Level(object):
             if level : return level
 
     def get_next_in_chapter(self):
+        """
+        :return: The next level in the corresponding chapter if exists, None otherwise.
+        :rtype: Level
+        """
         if self.is_last_in_chapter:
             return None
 
@@ -285,6 +356,10 @@ class Level(object):
             if level : return level
 
     def get_prev(self):
+        """
+        :return: The previous level if exists, None otherwise.
+        :rtype: Level
+        """
         if self.is_first:
             return None
 
@@ -295,6 +370,10 @@ class Level(object):
             if level : return level
 
     def get_prev_in_chapter(self):
+        """
+        :return: The previous level in the corresponding chapter if exists, None otherwise.
+        :rtype: Level
+        """
         if self.is_first_in_chapter:
             return None
 
@@ -311,27 +390,59 @@ class Level(object):
         return self.__data is not None
 
     def get_is_last(self):
+        """
+        :return: True if level is last on the map, False otherwise.
+        :rtype: bool
+        """
         return self.id == self.map.last_level.id
 
     def get_is_first(self):
+        """
+        :return: True if level is first on the map, False otherwise.
+        :rtype: bool
+        """
         return self.id == self.map.first_level.id
 
     def get_is_current(self):
+        """
+        :return: True if level is current on the map, False otherwise.
+        :rtype: bool
+        """
         return self.id == self.map.current_level.id
 
     def get_is_last_in_chapter(self):
+        """
+        :return: True if level is last in the chapter, False otherwise.
+        :rtype: bool
+        """
         return self.id == self.chapter.last_level.id
 
     def get_is_first_in_chapter(self):
+        """
+        :return: True if level is first in the chapter, False otherwise.
+        :rtype: bool
+        """
         return self.id == self.chapter.first_level.id
 
     def get_is_bonus(self):
+        """
+        :return: True if level is bonus, False otherwise.
+        :rtype: bool
+        """
         return self.__bonus
 
     def get_user_finished(self):
+        """
+        :return: True if level is finished, False otherwise.
+        :rtype: bool
+        """
         return self.__client.state.progress > self.id
 
     def get_user_score(self):
+        """
+        :return: Client's score.
+        :rtype: int
+        """
         rsp = Net.send(Commands.QueryLevels(self.__client.session, [self.qualified_id]))
         if self.qualified_id in rsp:
             return rsp[self.qualified_id]
@@ -339,6 +450,10 @@ class Level(object):
             return 0
 
     def get_user_star(self):
+        """
+        :return: Client's stars.
+        :rtype: Star
+        """
         score = self.get_user_score()
 
         star = 0
@@ -353,12 +468,20 @@ class Level(object):
         return Star(star)
 
     def get_friend_finished(self, friend):
+        """
+        :return: True if level is finished by friend, False otherwise.
+        :rtype: bool
+        """
         self.__client.add_friends(friend)
         friend = self.__client.get_friend(friend)
 
         return friend.progress > self.id
 
     def get_friend_score(self, friend):
+        """
+        :return: Friend's score.
+        :rtype: int
+        """
         self.__client.add_friends(friend)
         friend = self.__client.get_friend(friend)
 
@@ -368,6 +491,10 @@ class Level(object):
         return 0
 
     def get_friend_stars(self, friend):
+        """
+        :return: Friend's stars.
+        :rtype: Star
+        """
         self.__client.add_friends(friend)
         friend = self.__client.get_friend(friend)
 
@@ -379,18 +506,34 @@ class Level(object):
         return star
 
     def get_star(self, star):
+        """
+        :return: Score for star.
+        :rtype: int
+        """
         self.__autoload()
         return self.__data["scores"][int(star) - 1]
 
     def get_limit(self):
+        """
+        :return: Level limit.
+        :rtype: int
+        """
         self.__autoload()
         return self.__data["limit"][self.get_limit_type()]
 
     def get_limit_type(self):
+        """
+        :return: Level limit type.
+        :rtype: Limit
+        """
         self.__autoload()
         for key in self.__data["limit"] : return Limit(key)
 
     def get_level_type(self):
+        """
+        :return: Level type.
+        :rtype: Target
+        """
         self.__autoload()
         if len(self.__data["objectives"]) > 0:
             for key in self.__data["objectives"] : return Target(key)
