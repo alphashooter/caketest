@@ -44,7 +44,7 @@ def run() :
     for file in files:
         print "\033[1mStarting module '\033[31m%s\033[30m'...\033[0m" % file
         print ""
-        sleep(1)
+        sleep(3)
         if run_module(file):
             print "\033[1m\033[32mModule '%s' executed successfully.\033[0m" % file
             print ""

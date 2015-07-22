@@ -5,7 +5,7 @@ def __check_requests(friend):
     if len(friend.inbox.messages) > 0:
         fuel_requests = reduce(lambda res, x: res + x, map(lambda msg: 1 if msg.type == MessageType.FUEL_REQUEST else 0, friend.inbox.messages))
     if fuel_requests > 1:
-        raise RuntimeError()
+        raise RuntimeError("Test failed.")
 
 #
 

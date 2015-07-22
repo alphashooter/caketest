@@ -10,7 +10,7 @@ for level in client1.map.bonus_levels:
 
     level.finish(score=score)
     if level.get_user_score() != score:
-        raise RuntimeError()
+        raise RuntimeError("Test failed.")
 
     if client2.map.get_bonus_level(level.id).get_friend_score(client1) != score:
-        raise RuntimeError()
+        raise RuntimeError("Test failed.")
