@@ -545,35 +545,35 @@ class Client(object):
 
     def get_state(self):
         """
-        :return: The current ClientState instance.
+        :return: The current state instance.
         :rtype: ClientState
         """
         return self.__state
 
     def get_defs(self):
         """
-        :return: The current ClientDefs instance.
+        :return: The current defs instance.
         :rtype: ClientDefs
         """
         return self.__defs
 
     def get_map(self):
         """
-        :return: The current map.Map instance.
+        :return: The current map instance.
         :rtype: Map.Map
         """
         return self.__map
 
     def get_inbox(self):
         """
-        :return: The current Inbox.Inbox instance.
+        :return: The current inbox instance.
         :rtype: Inbox.Inbox
         """
         return self.__inbox
 
     def get_storage(self):
         """
-        :return: The current Storage.Storage instance.
+        :return: The current storage instance.
         :rtype: Storage.Storage
         """
         return self.__storage
@@ -586,7 +586,7 @@ class Client(object):
 
     def get_boosters(self):
         """
-        :return: The current Boosters.Boosters instance.
+        :return: The current boosters instance.
         :rtype: Boosters.Boosters
         """
         return self.__boosters
