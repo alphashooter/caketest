@@ -567,14 +567,14 @@ class Client(object):
     def get_inbox(self):
         """
         :return: The current Inbox.Inbox instance.
-        :rtype: inbox.Inbox
+        :rtype: Inbox.Inbox
         """
         return self.__inbox
 
     def get_storage(self):
         """
         :return: The current Storage.Storage instance.
-        :rtype: storage.Storage
+        :rtype: Storage.Storage
         """
         return self.__storage
 
