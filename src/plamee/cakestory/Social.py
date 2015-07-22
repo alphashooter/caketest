@@ -3,9 +3,13 @@ import Commands
 
 
 class Friend(object):
+    """
+    Provides access to friends information and methods.
+    """
+
     def __init__(self, client, network, nid):
         self.__client = client
-        self.__network = network
+        self.__network = str(network)
         self.__nid = str(nid)
         self.__uid = None
 
@@ -14,12 +18,24 @@ class Friend(object):
             raise RuntimeError("Friend does not exist.")
 
     def get_network(self):
+        """
+        :return: Friend's network.
+        :rtype: str
+        """
         return self.__network
 
     def get_network_id(self):
+        """
+        :return: Friend's network id.
+        :rtype: str
+        """
         return self.__nid
 
     def get_user_id(self):
+        """
+        :return: Friend's game user id.
+        :rtype: int
+        """
         if self.__uid is None:
             rsp = Net.send(Commands.QueryUsers(self.__client.session, self.network, [self.network_id]))
             if self.network in rsp and self.network_id in rsp[self.network]:
@@ -27,32 +43,68 @@ class Friend(object):
         return self.__uid
 
     def send_life(self):
+        """
+        Attempts to send life to friend.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         self.__assert_exist()
         return not Net.send(Commands.SendLifeCommand(self.__client, self.user_id)).rejected
 
     def send_help(self, level=None):
+        """
+        Attempts to send help to friend.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         self.__assert_exist()
         if level is None:
             level = self.progress
         return not Net.send(Commands.SendHelpCommand(self.__client, self.user_id, level)).rejected
 
     def request_life(self):
+        """
+        Attempts to request life from friend.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         self.__assert_exist()
         return not Net.send(Commands.RequestLifeCommand(self.__client, self.user_id)).rejected
 
     def request_fuel(self):
+        """
+        Attempts to request fuel from friend.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         self.__assert_exist()
         return not Net.send(Commands.RequestFuelCommand(self.__client, self.user_id)).rejected
 
     def get_exist(self):
+        """
+        :return: True if friend is registered on game server, False otherwise.
+        :rtype: bool
+        """
         return self.user_id is not None
 
     def get_progress(self):
+        """
+        :return: Friend's progress.
+        :rtype: int
+        """
         self.__assert_exist()
         rsp = Net.send(Commands.QueryUsersProgress(self.__client.session, [self.user_id])).response
         return int(rsp[self.user_id])
 
     def get_last_activity(self):
+        """
+        :return: Friend's last activity time.
+        :rtype: int
+        """
         self.__assert_exist()
         rsp = Net.send(Commands.QueryUsersTime(self.__client.session, [self.user_id]))
         if self.user_id in rsp and "last_activity" in rsp[self.user_id]:
@@ -60,6 +112,10 @@ class Friend(object):
         return None
 
     def get_last_level_activity(self):
+        """
+        :return: Friend's last level activity time.
+        :rtype: int
+        """
         self.__assert_exist()
         rsp = Net.send(Commands.QueryUsersTime(self.__client.session, [self.user_id]))
         if self.user_id in rsp and "finish_level_time" in rsp[self.user_id]:
