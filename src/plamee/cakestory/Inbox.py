@@ -110,6 +110,9 @@ class Inbox(object):
     Class Inbox provides access to client's inbox.
     """
 
+    GETTERS = ["messages", "read_messages", "delete_messages"]
+    SETTERS = []
+
     def __init__(self, client):
         self.__client = client
 
@@ -131,7 +134,7 @@ class Inbox(object):
             messages.append(Message(self.__client, message))
         return messages
 
-    def read_all(self):
+    def read_messages(self):
         """
         Marks all messages from inbox as read.
         """
@@ -141,7 +144,7 @@ class Inbox(object):
             result = result and message.read()
         return result
 
-    def delete_all(self):
+    def delete_messages(self):
         """
         Deletes all messages from inbox.
         """

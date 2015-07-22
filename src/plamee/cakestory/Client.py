@@ -101,6 +101,9 @@ class ClientState(object):
     Class ClientState provides access to client's state.
     """
 
+    GETTERS = ["user_id", "progress", "real_balance", "game_balance", "add_real_balance", "add_game_balance"]
+    SETTERS = ["real_balance", "game_balance"]
+
     def __init__(self, client):
         self.__client = client
         self.__data = None
@@ -332,6 +335,7 @@ class Client(object):
         for i in range(len(self.__info)):
             if self.__info[i].network == str(network):
                 return self.__info[i]
+        return None
 
     def __has_network(self, network):
         return self.__get_network(network) is not None
@@ -590,6 +594,22 @@ class Client(object):
         :rtype: Boosters.Boosters
         """
         return self.__boosters
+
+    def __getattr__(self, item):
+        if item in ClientState.GETTERS:
+            return eval("self.state.%s", item)
+        if item in Inbox.Inbox.GETTERS:
+            return eval("self.inbox.%s", item)
+        raise NotImplementedError()
+
+    def __setattr__(self, key, value):
+        if key in ClientState.SETTERS:
+            eval("self.state.%s = value", key)
+        if key in Inbox.Inbox.SETTERS:
+            eval("self.inbox.%s = value", key)
+        raise NotImplementedError()
+
+
 
     network = property(get_network)
     network_id = property(get_network_id)

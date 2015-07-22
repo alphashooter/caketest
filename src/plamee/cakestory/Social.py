@@ -7,8 +7,12 @@ class Friend(object):
     Provides access to friends information and methods.
     """
 
-    def __init__(self, client, network, nid):
+    def __init__(self, client, nid, network=None):
         self.__client = client
+
+        if network is None:
+            network = client.network
+
         self.__network = str(network)
         self.__nid = str(nid)
         self.__uid = None
