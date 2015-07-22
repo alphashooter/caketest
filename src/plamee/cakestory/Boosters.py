@@ -2,6 +2,10 @@ import Net
 import Commands
 
 class BoosterType:
+    """
+    Enumeration class which contains common booster types.
+    """
+
     NAMES = [
         "pastry_tongs",
         "gingerbread_man",
@@ -55,7 +59,18 @@ BoosterType.EXTRA_MOVES = BoosterType("extra_moves")
 
 
 class Booster(object):
+    """
+    Class Booster manages client's boosters of the specified type.
+    """
+
     def __init__(self, client, type):
+        """
+        Creates a Booster class instance.
+
+            :param client: The current client.
+            :param type: Booster type.
+        """
+
         self.__client = client
         self.__type = type
 
@@ -68,6 +83,14 @@ class Booster(object):
         return packs
 
     def buy(self, count=1):
+        """
+        Attempts to buy a booster pack.
+
+            :param count: A number of packs to buy.
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
+
         packs_count = self.__convert_count(count)
         for i in range(packs_count):
             if not Net.send(Commands.BuyBoosterCommand(self.__client, self.__type)).rejected:
@@ -77,12 +100,28 @@ class Booster(object):
         return True
 
     def force_buy(self, count=1):
+        """
+        Forces attempt to buy a booster pack.
+
+        If a client has no enough real balance for purchase, the balance will be filled up.
+
+            :param count: A number of packs to buy.
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         packs_count = self.__convert_count(count)
         if self.__client.state.real_balance < packs_count * self.pack_price:
             self.__client.state.real_balance = packs_count * self.pack_price
         return self.buy(count)
 
     def spend(self, count=1):
+        """
+        Attempts to spend a client's booster.
+
+            :param count: A number of boosters to spend.
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         if self.count < count:
             return False
 
@@ -90,11 +129,24 @@ class Booster(object):
         return True
 
     def force_spend(self, count=1):
+        """
+        Forces attempt to spend a client's booster.
+
+        If a client has no enough boosters to spend, attempts to force buy the booster packs.
+
+            :param count: A number of boosters to spend.
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         if self.count < count:
             self.force_buy(count - self.count)
         return self.spend(count)
 
     def get_pack_price(self):
+        """
+        :return: Price of the booster pack.
+        :rtype: int
+        """
         network = self.__client.network
         if not network in self.__client.defs.social_networks:
             network = "default"
@@ -103,6 +155,10 @@ class Booster(object):
         return 0
 
     def get_pack_count(self):
+        """
+        :return: Number of boosters in the booster pack.
+        :rtype: int
+        """
         network = self.__client.network
         if not network in self.__client.defs.social_networks:
             network = "default"
@@ -111,12 +167,22 @@ class Booster(object):
         return 0
 
     def get_type(self):
+        """
+        :return: Booster type.
+        :rtype: BoosterType
+        """
         return BoosterType(self.__type)
 
     def get_count(self):
+        """
+        :return: Number of the client's boosters from the storage.
+        """
         return self.__client.storage["boosters"][self.__type] if self.__type in self.__client.storage["boosters"] else 0
 
     def set_count(self, value):
+        """
+        Changes number of the client's boosters in the storage.
+        """
         self.__client.storage["boosters"][self.__type] = int(value)
 
     type = property(get_type)
@@ -126,6 +192,10 @@ class Booster(object):
 
 
 class Boosters(object):
+    """
+    Class Boosters provides access to client's boosters.
+    """
+
     def __init__(self, client):
         self.__client = client
 
