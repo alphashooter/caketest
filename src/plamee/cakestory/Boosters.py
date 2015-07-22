@@ -208,3 +208,9 @@ class Boosters(object):
     def __iter__(self):
         boosters = list(Booster(self.__client, BoosterType(name)) for name in BoosterType.NAMES)
         return iter(boosters)
+
+    def keys(self):
+        return BoosterType.NAMES[:]
+
+    def values(self):
+        return list(Booster(self.__client, BoosterType(name)) for name in BoosterType.NAMES)
