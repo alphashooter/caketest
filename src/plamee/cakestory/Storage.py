@@ -55,10 +55,16 @@ class Storage(utils.sdict):
         return storage
 
     def merge(self, data):
+        """
+        Merges storage data.
+        """
         utils.merge_objects(self, data)
         self.__init()
 
     def assign(self, data):
+        """
+        Resets storage data.
+        """
         self.__loaded = True
         self.__lock()
         self.clear()
@@ -67,6 +73,9 @@ class Storage(utils.sdict):
         self.upload()
 
     def load(self):
+        """
+        Loads storage data.
+        """
         rsp = Net.send(Commands.FetchStorage(self.__client.storage_session, self.__client.session)).response
         self.__loaded = True
         self.__lock()
@@ -74,6 +83,9 @@ class Storage(utils.sdict):
         self.__unlock()
 
     def upload(self):
+        """
+        Uploads storage data.
+        """
         if self.__get_parent() is not None:
             self.__get_parent().upload()
         else:
@@ -83,6 +95,9 @@ class Storage(utils.sdict):
                 self.__unlock()
 
     def reset(self):
+        """
+        Resets storage.
+        """
         self.assign({})
 
     def __getitem__(self, item):
