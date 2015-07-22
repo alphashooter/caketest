@@ -31,14 +31,14 @@ class SessionGet(ServerCommand):
     def __init__(self, info, auth=None):
         data = {
             "client_network": {
-                "network_code": info.network,
+                "network_code": str(info.network),
                 "network_id": info.network_id,
                 "access_token": info.access_token
             }
         }
         if auth:
             data["auth_network"] = {
-                "network_code": auth.network,
+                "network_code": str(auth.network),
                 "network_id": auth.network_id,
                 "access_token": auth.access_token
             }
@@ -50,7 +50,7 @@ class SessionUpdate(ServerCommand):
         data = {"session": session}
         if auth:
             data["auth_network"] = {
-                "network_code": auth.network,
+                "network_code": str(auth.network),
                 "network_id": auth.network_id,
                 "access_token": auth.access_token
             }
@@ -84,7 +84,7 @@ class QueryLevels(ServerCommand):
 
 class QueryUsers(ServerCommand):
     def __init__(self, session, network, nids):
-        credentials = dict()
+        credentials = utils.sdict()
         credentials[network] = nids[:]
 
         ServerCommand.__init__(
@@ -273,7 +273,7 @@ class UnlockChapterCommand(ExecuteCommand):
 
 class BuyChapterUnlocksCommand(ExecuteCommand):
     def __init__(self, client):
-        network = client.network
+        network = str(client.network)
         if not network in client.defs.social_networks:
             network = "default"
         ExecuteCommand.__init__(self, client, "buy_chapter_unlocks", {"network_code": network})
@@ -281,7 +281,7 @@ class BuyChapterUnlocksCommand(ExecuteCommand):
 
 class BuyBoosterCommand(ExecuteCommand):
     def __init__(self, client, pack):
-        network = client.network
+        network = str(client.network)
         if not network in client.defs.social_networks:
             network = "default"
         ExecuteCommand.__init__(self, client, "buy_booster_pack", {"network_code": network, "name": str(pack)})
