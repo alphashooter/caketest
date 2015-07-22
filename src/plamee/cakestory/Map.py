@@ -6,6 +6,10 @@ import Level
 
 
 class Chapter(object):
+    """
+    Class Chapter provides access to chapter information, contents and methods.
+    """
+
     def __init__(self, client, map, id, hash, data=None):
         self.__client = client
         self.__map = map
@@ -31,6 +35,9 @@ class Chapter(object):
         raise AttributeError()
 
     def parse(self, data):
+        """
+        Parses chapter from JS-like object.
+        """
         self.__levels = list(
             Level.Level(self.__client, self, data["levels"][i]["id"], data["levels"][i]["hash"]) for i in range(len(data["levels"])))
         self.__bonus = list()
@@ -38,6 +45,9 @@ class Chapter(object):
             self.__bonus.append(Level.Level(self.__client, self, data["bonus_level"]["id"], data["bonus_level"]["hash"], True))
 
     def load(self, separately=False):
+        """
+        Loads chapter's levels.
+        """
         if separately:
             for i in range(len(self.__levels)):
                 self.__levels[i].load()
@@ -47,6 +57,12 @@ class Chapter(object):
                 self.get_level_by_hash(key).parse(rsp[key])
 
     def finish(self):
+        """
+        Attempts to finish all levels in chapter.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         if self.is_locked:
             return False
 
@@ -61,6 +77,12 @@ class Chapter(object):
         return True
 
     def force_finish(self):
+        """
+        Forces attempt to finish all levels in chapter.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         if self.is_locked:
             if not self.force_unlock():
                 return False
@@ -68,21 +90,51 @@ class Chapter(object):
         return self.finish()
 
     def buy_unlocks(self):
+        """
+        Attempts to buy unlocks for chapter.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         cmd = Commands.BuyChapterUnlocksCommand(self.__client)
         Net.send(cmd)
         return not cmd.rejected
 
     def force_buy_unlocks(self):
+        """
+        Forces attempt to buy unlocks for chapter.
+
+        If client has no enough real balance, fills it up.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         if self.__client.state.real_balance < self.unlock_price:
             self.__client.state.real_balance = self.unlock_price
         return self.buy_unlocks()
 
     def unlock(self):
+        """
+        Attempts to unlock chapter.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         cmd = Commands.UnlockChapterCommand(self.__client)
         Net.send(cmd)
         return not cmd.rejected
 
     def force_unlock(self):
+        """
+        Forces attempt to unlock chapter.
+
+        If previous chapter is locked, forces its unlock.
+
+        If chapter has no enough unlocks, forces its purchase.
+
+            :return: True in case of success, False otherwise.
+            :rtype: bool
+        """
         if self.is_unlocked:
             return True
 
@@ -100,18 +152,38 @@ class Chapter(object):
         return self.unlock()
 
     def get_id(self):
+        """
+        :return: Chapter id.
+        :rtype: int
+        """
         return self.__id
 
     def get_qualified_id(self):
+        """
+        :return: Chapter qualified id.
+        :rtype: str
+        """
         return self.__qid
 
     def get_hash(self):
+        """
+        :return: Chatper hash.
+        :rtype: str
+        """
         return self.__hash
 
     def get_map(self):
+        """
+        :return: The corresponding map object.
+        :rtype: Map
+        """
         return self.__map
 
     def get_next(self):
+        """
+        :return: The next chapter if exists, None otherwise.
+        :rtype: Chapter
+        """
         if self.is_last:
             return None
 
@@ -122,6 +194,10 @@ class Chapter(object):
             if chapter : return chapter
 
     def get_prev(self):
+        """
+        :return: The previous chapter if exists, None otherwise.
+        :rtype: Chapter
+        """
         if self.is_first:
             return None
 
@@ -143,15 +219,31 @@ class Chapter(object):
         return True
 
     def get_is_first(self):
+        """
+        :return: True if chapter is first on the map, False otherwise.
+        :rtype: bool
+        """
         return self.id == self.map.first_chapter.id
 
     def get_is_last(self):
+        """
+        :return: True if chapter is last on the map, False otherwise.
+        :rtype: bool
+        """
         return self.id == self.map.last_chapter.id
 
     def get_is_current(self):
+        """
+        :return: True if chapter is current on the map, False otherwise.
+        :rtype: bool
+        """
         return self.id == self.map.current_chapter.id
 
     def get_level_by_hash(self, hash):
+        """
+        :return: Level specified by hash if exists, None otherwise.
+        :rtype: Level.Level
+        """
         for i in range(len(self.__levels)):
             if self.__levels[i].hash == str(hash):
                 return self.__levels[i]
@@ -161,23 +253,43 @@ class Chapter(object):
         return None
 
     def get_level(self, id):
+        """
+        :return: Level specified by id if exists, None otherwise.
+        :rtype: Level.Level
+        """
         for i in range(len(self.__levels)):
             if str(self.__levels[i].id) == str(id) or self.__levels[i].qualified_id == str(id):
                 return self.__levels[i]
         return None
 
     def get_level_first(self):
+        """
+        :return: The first level in chapter.
+        :rtype: Level.Level
+        """
         ids = sorted(list(self.__levels[i].id for i in range(len(self.__levels))))
         return self.get_level(ids[0])
 
     def get_level_last(self):
+        """
+        :return: The last level in chapter.
+        :rtype: Level.Level
+        """
         ids = sorted(list(self.__levels[i].id for i in range(len(self.__levels))))
         return self.get_level(ids[len(ids) - 1])
 
     def get_levels(self):
+        """
+        :return: List of all levels in chapter.
+        :rtype: list
+        """
         return sorted(self.__levels[:], key=Level.Level.get_id)
 
     def get_bonus_level(self, id=None):
+        """
+        :return: Bonus level specified by id if exists, None otherwise.
+        :rtype: Level.Level
+        """
         if not id :
             id = self.id
         for i in range(len(self.__bonus)):
@@ -186,33 +298,65 @@ class Chapter(object):
         return None
 
     def get_bonus_levels(self):
+        """
+        :return: List of all bonus levels in chapter.
+        :rtype: list
+        """
         return sorted(self.__bonus[:], key=Level.Level.get_id)
 
     def get_unlocks(self):
+        """
+        :return: Chatper unlocks.
+        :rtype: list
+        """
         if self.qualified_id in self.__client.state.chapters and "unlocks" in self.__client.state.chapters[self.qualified_id]:
             return list(self.__client.state.chapters[self.qualified_id]["unlocks"])
         return list()
 
     def get_locks_count(self):
+        """
+        :return: Number of chapter locks.
+        :rtype: int
+        """
         return int(self.__client.defs.chapters[self.qualified_id]["unlocks_count"])
 
     def get_unlocks_count(self):
+        """
+        :return: Number of chapter unlocks.
+        :rtype: int
+        """
         return len(self.get_unlocks())
 
     def get_unlock_price(self):
+        """
+        :return: Price of chapter unlock.
+        :rtype: int
+        """
         if self.is_unlocked:
             return 0
         return self.__client.defs.get_unlock_price(self.locks - self.unlocks)
 
     def get_is_locked(self):
+        """
+        :return: True if chapter is locked, False otherwise.
+        :rtype: bool
+        """
         return not self.get_is_unlocked()
 
     def get_is_unlocked(self):
+        """
+        :return: True if chapter is unlocked, False otherwise.
+        :rtype: bool
+        """
         if self.qualified_id in self.__client.state.chapters and "unlocked" in self.__client.state.chapters[self.qualified_id]:
             return bool(self.__client.state.chapters[self.qualified_id]["unlocked"])
         return False
 
     def get_is_finished(self):
+        """
+        :return: True if chapter is finished, False otherwise.
+        :rtype: bool
+        """
         return self.__client.state.progress > self.last_level.id
 
     id = property(get_id)
@@ -243,6 +387,10 @@ class Chapter(object):
 
 
 class Map(object):
+    """
+    Class Map provides access to map information, contents and methods.
+    """
+
     def __init__(self, client, data=None):
         self.__client = client
         self.__chapters = None
@@ -269,9 +417,15 @@ class Map(object):
 
 
     def parse(self, data):
+        """
+        Parses map from JS-like object.
+        """
         self.__chapters = list(Chapter(self.__client, self, data[i]["id"], data[i]["hash"], data[i]) for i in range(len(data)))
 
     def load(self, separately=False):
+        """
+        Loads all chapters on map.
+        """
         for i in range(len(self.__chapters)):
             self.__chapters[i].load(separately)
 
@@ -287,6 +441,10 @@ class Map(object):
         return True
 
     def get_chapter_by_hash(self, hash):
+        """
+        :return: Chapter specified by hash if exists, None otherwise.
+        :rtype: Chapter
+        """
         self.__autoinit()
         for i in range(len(self.__chapters)):
             if self.__chapters[i].hash == str(hash):
@@ -294,6 +452,10 @@ class Map(object):
         return None
 
     def get_chapter(self, id):
+        """
+        :return: Chapter specified by id if exists, None otherwise.
+        :rtype: Chapter
+        """
         self.__autoinit()
         for i in range(len(self.__chapters)):
             if str(self.__chapters[i].id) == str(id) or str(self.__chapters[i].qualified_id) == str(id):
@@ -301,16 +463,28 @@ class Map(object):
         return None
 
     def get_chapter_first(self):
+        """
+        :return: The first chapter on map.
+        :rtype: Chapter
+        """
         self.__autoinit()
         ids = sorted(list(self.__chapters[i].id for i in range(len(self.__chapters))))
         return self.get_chapter(ids[0])
 
     def get_chapter_last(self):
+        """
+        :return: The last chapter on map.
+        :rtype: Chapter
+        """
         self.__autoinit()
         ids = sorted(list(self.__chapters[i].id for i in range(len(self.__chapters))))
         return self.get_chapter(ids[len(ids) - 1])
 
     def get_chapter_current(self):
+        """
+        :return: The current chapter on map.
+        :rtype: Chapter
+        """
         self.__autoinit()
         current_level = self.current_level
         current_chapter = current_level.chapter if current_level is not None else None
@@ -325,10 +499,18 @@ class Map(object):
             return None
 
     def get_chapters(self):
+        """
+        :return: All chapters on map.
+        :rtype: list
+        """
         self.__autoinit()
         return sorted(self.__chapters[:], key=Chapter.get_id)
 
     def get_level_by_hash(self, hash):
+        """
+        :return: Level specified by hash if exists, None otherwise.
+        :rtype: Level.Level
+        """
         self.__autoinit()
         for i in range(len(self.__chapters)):
             level = self.__chapters[i].get_level_by_hash(hash)
@@ -336,6 +518,10 @@ class Map(object):
         return None
 
     def get_level(self, id):
+        """
+        :return: Level specified by id if exists, None otherwise.
+        :rtype: Level.Level
+        """
         self.__autoinit()
         for i in range(len(self.__chapters)):
             level = self.__chapters[i].get_level(id)
@@ -343,18 +529,34 @@ class Map(object):
         return None
 
     def get_level_first(self):
+        """
+        :return: The first level on map.
+        :rtype: Level.Level
+        """
         self.__autoinit()
         return self.first_chapter.first_level
 
     def get_level_last(self):
+        """
+        :return: The last level on map.
+        :rtype: Level.Level
+        """
         self.__autoinit()
         return self.last_chapter.last_level
 
     def get_level_current(self):
+        """
+        :return: The current level on map.
+        :rtype: Level.Level
+        """
         self.__autoinit()
         return self.get_level(self.__client.state.progress)
 
     def get_levels(self):
+        """
+        :return: All levels on map.
+        :rtype: list
+        """
         self.__autoinit()
         chapters = self.get_chapters()
         levels = list()
@@ -363,6 +565,10 @@ class Map(object):
         return levels
 
     def get_bonus_level(self, id):
+        """
+        :return: Bonus level specified by id if exists, None otherwise.
+        :rtype: Level.Level
+        """
         self.__autoinit()
         for i in range(len(self.__chapters)):
             level = self.__chapters[i].get_bonus_level(id)
@@ -370,6 +576,10 @@ class Map(object):
         return None
 
     def get_bonus_levels(self):
+        """
+        :return: All bonus levels on map.
+        :rtype: list
+        """
         self.__autoinit()
         chapters = self.get_chapters()
         levels = list()
