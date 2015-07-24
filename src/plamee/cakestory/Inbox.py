@@ -9,8 +9,8 @@ class MessageType:
 
     __VALUES = ["life", "fuel", "booster", "request_life", "request_fuel"]
 
-    LIFE_REQUEST = None
-    FUEL_REQUEST = None
+    REQUEST_LIFE = None
+    REQUEST_FUEL = None
     LIFE = None
     FUEL = None
     HELP = None
@@ -34,8 +34,8 @@ class MessageType:
 MessageType.LIFE = MessageType("life")
 MessageType.FUEL = MessageType("fuel")
 MessageType.HELP = MessageType("booster")
-MessageType.LIFE_REQUEST = MessageType("request_life")
-MessageType.FUEL_REQUEST = MessageType("request_fuel")
+MessageType.REQUEST_LIFE = MessageType("request_life")
+MessageType.REQUEST_FUEL = MessageType("request_fuel")
 
 
 class Message(object):

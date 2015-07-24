@@ -36,6 +36,7 @@ def run() :
     files = filter(lambda file: re.match(r"^.+\.py$", file) is not None, files)
     files = map(lambda file: re.match(r"^(.+)\.py$", file).group(1), files)
     files = filter(lambda file: re.match(r"^__.+__$", file) is None, files)
+    files = filter(lambda file: re.match(r"^.*?_example$", file), files)
 
     print "\033[1mLoading modules: \033[31m" + "".join(map(lambda file: "\n  * %s" % file, files)) + "\033[0m"
     print ""
