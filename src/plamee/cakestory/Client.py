@@ -101,9 +101,6 @@ class ClientState(object):
     Class ClientState provides access to client's state.
     """
 
-    GETTERS = ["user_id", "progress", "real_balance", "game_balance", "add_real_balance", "add_game_balance"]
-    SETTERS = ["real_balance", "game_balance"]
-
     def __init__(self, client):
         self.__client = client
         self.__data = None
@@ -376,12 +373,20 @@ class Client(object):
         :return: A ClientNetworkInfo instance for the specified network.
         :rtype: ClientNetworkInfo
         """
+        if self.__session is None:
+            self.init()
+
         if not network:
             if len(self.__info) > 0:
                 return self.__info[0]
-            else:
-                return 0
+            return None
         return self.__get_network(network)
+
+    def get_auth_infos(self):
+        if self.__session is None:
+            self.init()
+
+        return self.__info[:]
 
     def get_network(self, network=None):
         info = self.get_auth_info(network)
@@ -418,7 +423,7 @@ class Client(object):
         :return: Friend instance specified by descriptor if any, None otherwise.
         """
         if isinstance(descriptor, Client):
-            for info in descriptor.__info:
+            for info in descriptor.get_auth_infos():
                 friend = self.get_friend(info.network_id)
                 if friend is not None : return friend
         else:
@@ -457,11 +462,11 @@ class Client(object):
                     continue
 
                 if isinstance(arg, Client):
-                    self.__friends.append(Social.Friend(self, arg.network, arg.network_id))
+                    self.__friends.append(Social.Friend(self, arg.network_id, arg.network))
                 elif isinstance(arg, Social.Friend):
-                    self.__friends.append(arg)
+                    self.__friends.append(Social.Friend(self, arg.network_id, arg.network))
                 else:
-                    self.__friends.append(Social.Friend(self, self.network, str(arg)))
+                    self.__friends.append(Social.Friend(self, str(arg)))
 
     def send_life(self, friend):
         """
@@ -540,6 +545,7 @@ class Client(object):
         :return: Client's storage session.
         :rtype: str
         """
+        if not self.__session : self.__get_session()
         if self.__storage_session is None : self.__get_storage_session()
         return self.__storage_session
 
@@ -595,22 +601,6 @@ class Client(object):
         """
         return self.__boosters
 
-    def __getattr__(self, item):
-        if item in ClientState.GETTERS:
-            return eval("self.state.%s", item)
-        if item in Inbox.Inbox.GETTERS:
-            return eval("self.inbox.%s", item)
-        raise NotImplementedError()
-
-    def __setattr__(self, key, value):
-        if key in ClientState.SETTERS:
-            eval("self.state.%s = value", key)
-        if key in Inbox.Inbox.SETTERS:
-            eval("self.inbox.%s = value", key)
-        raise NotImplementedError()
-
-
-
     network = property(get_network)
     network_id = property(get_network_id)
     access_token = property(get_access_token)
@@ -625,4 +615,37 @@ class Client(object):
     inbox = property(get_inbox)
     boosters = property(get_boosters)
     storage = property(get_storage, set_storage)
+
+    #
+
+    def get_user_id(self):
+        return self.state.get_user_id()
+
+    def get_progress(self):
+        return self.state.get_progress()
+
+    def get_real_balance(self):
+        return self.state.get_real_balance()
+
+    def set_real_balance(self, value):
+        self.state.set_real_balance(value)
+
+    def get_game_balance(self):
+        return self.state.get_game_balance()
+
+    def set_game_balance(self, value):
+        self.state.set_game_balance(value)
+
+    user_id = property(get_user_id)
+    progress = property(get_progress)
+    real_balance = property(get_real_balance, set_real_balance)
+    game_balacne = property(get_game_balance, set_game_balance)
+
+    #
+
+    def get_messages(self):
+        return self.inbox.get_messages()
+
+    messages = property(get_messages)
+
 

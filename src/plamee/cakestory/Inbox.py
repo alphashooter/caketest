@@ -110,9 +110,6 @@ class Inbox(object):
     Class Inbox provides access to client's inbox.
     """
 
-    GETTERS = ["messages", "read_messages", "delete_messages"]
-    SETTERS = []
-
     def __init__(self, client):
         self.__client = client
 
