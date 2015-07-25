@@ -71,6 +71,16 @@ def init():
             log.level = 0
         elif arg == "--use-http":
             http = True
+        elif arg == "--help":
+            print "usage: m3highload-test [--config file] [--host str] [--port int] [--use-http] [--log file] [--verbose] [--help]\n" \
+            "  --config    Loads config from the specified file.\n" \
+            "  --host      Server host.\n" \
+            "  --port      Server port.\n" \
+            "  --use-http  Forces to use http instead of https.\n" \
+            "  --verbose   Prints debug information during execution.\n" \
+            "  --log       Writes logs into the specified file.\n" \
+            "  --help      Shows this message.\n"
+            sys.exit(0)
 
 
     load_config(config_file)

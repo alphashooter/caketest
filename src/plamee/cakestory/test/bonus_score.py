@@ -1,14 +1,17 @@
 import random
 from plamee.cakestory import *
+from plamee import log
 
 client1 = Client()
 client2 = Client()
 
 for level in client1.map.bonus_levels:
-    score = random.randint(10000, 50000)
-    level.chapter.force_finish()
+    if not level.chapter.force_finish():
+        log.error("Cannot finish chapter.")
 
+    score = random.randint(10000, 50000)
     level.finish(score=score)
+
     if level.get_user_score() != score:
         raise RuntimeError("Test failed.")
 

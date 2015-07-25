@@ -6,6 +6,7 @@ from time import sleep
 from importlib import import_module
 
 from plamee.cakestory import *
+from plamee import log
 
 def run_module(file):
     try:
