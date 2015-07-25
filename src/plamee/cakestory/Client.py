@@ -150,6 +150,14 @@ class ClientState(object):
         self.__autoload()
         return self.__data["user_data"]["user_id"]
 
+    def get_loyality(self):
+        """
+        :return: Current loyality.
+        :rtype: float
+        """
+        self.__autoload()
+        return float(self.__data["difficulty"]["mixin"])
+
     def get_progress(self):
         """
         :return: The current client's progress.
