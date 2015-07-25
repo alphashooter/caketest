@@ -1,5 +1,6 @@
 import sys
 import traceback
+import plamee.log as log
 
 from time import sleep
 from importlib import import_module
@@ -10,21 +11,17 @@ def run_module(file):
     try:
         import_module(file)
     except:
-        print "\033[1m\033[31mError occured during executing module '%s'\033[0m\n" % file
-
-        traceback.print_exception(sys.exc_type, sys.exc_value, sys.exc_traceback)
-        print ""
-
+        log.error("Error occured during executing module '%s'" % file, False)
+        log.message("".join(traceback.format_exception(sys.exc_type, sys.exc_value, sys.exc_traceback)))
         return False
     return True
 
 def exit():
-    print "\033[1mTest failed.\033[0m"
-    print ""
+    log.message("Test failed.")
     sys.exit(-1)
 
-def run() :
-    Net.connect("m3highload-master.test.nsk.plamee.com")
+def run(host, port=None, http=False, config=None) :
+    Net.connect(host=host, port=port, http=http)
 
     from os import listdir
     from os.path import isfile, dirname, join
@@ -38,21 +35,16 @@ def run() :
     files = filter(lambda file: re.match(r"^__.+__$", file) is None, files)
     files = filter(lambda file: re.match(r"^.*?_example$", file) is None, files)
 
-    print "\033[1mLoading modules: \033[31m" + "".join(map(lambda file: "\n  * %s" % file, files)) + "\033[0m"
-    print ""
+    log.info("Loading modules:\n%s" % "\n".join(map(lambda file: str("  * %s" % file), files)))
 
     sys.path.extend([dir])
     for file in files:
-        print "\033[1mStarting module '\033[31m%s\033[30m'...\033[0m" % file
-        print ""
+        log.info("Starting module '%s'..." % file)
         sleep(3)
         if run_module(file):
-            print "\033[1m\033[32mModule '%s' executed successfully.\033[0m" % file
-            print ""
+            log.info("Module '%s' executed successfully." % file)
         else:
-            print "\033[1m\033[31mModule '%s' failed.\033[0m" % file
-            print ""
+            log.error("Module '%s' failed." % file, False)
             exit()
 
-    print "\033[1mAll tests passed.\033[0m"
-    print ""
+    log.message("All tests passed.")

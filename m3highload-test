@@ -1,4 +1,4 @@
 #!/bin/sh
 
-cd $(dirname ${BASH_SOURCE[0]})
-python2.7 ./src/main.py
+DIR=$(dirname ${BASH_SOURCE[0]})
+python2.7 $DIR/src/main.py $@
