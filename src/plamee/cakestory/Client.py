@@ -541,7 +541,7 @@ class Client(object):
         """
         Resets all client's data including inbox, state and storage.
         """
-        self.inbox.delete_all()
+        self.inbox.delete_messages()
         self.state.reset()
         self.storage.reset()
 
