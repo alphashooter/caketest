@@ -9,6 +9,7 @@ LEVEL_MESSAGE = 5
 
 level = 1
 file = None
+decoration = True
 
 class Message:
     def __init__(self, level, message):
@@ -20,18 +21,21 @@ def __convert_message(level, message):
     return "%s\n%s\n%s\n\n" % (time.strftime("%a, %d %b %Y %H:%M:%S.{:0>3d} +0000", time.gmtime()).format(divmod(int(time.time() * 1000 + 0.5), 1000)[1]), level, "\n".join(map(lambda line: ">> %s" % line, message.splitlines())))
 
 def __format_message(message):
-    if message.level <= LEVEL_DEBUG:
-        return "\033[90m%s\033[0m\n" % message.message
-    elif message.level <= LEVEL_INFO:
-        return "\033[1m\033[30m%s\033[0m\n" % message.message
-    elif message.level <= LEVEL_OK:
-        return "\033[1m\033[32m%s\033[0m\n" % message.message
-    elif message.level <= LEVEL_WARNING:
-        return "\033[1m\033[33m%s\033[0m\n" % message.message
-    elif message.level <= LEVEL_ERROR:
-        return "\033[1m\033[31m%s\033[0m\n" % message.message
+    if not decoration:
+        return message.message
     else:
-        return "\033[30m%s\033[0m\n" % message.message
+        if message.level <= LEVEL_DEBUG:
+            return "\033[90m%s\033[0m\n" % message.message
+        elif message.level <= LEVEL_INFO:
+            return "\033[1m\033[30m%s\033[0m\n" % message.message
+        elif message.level <= LEVEL_OK:
+            return "\033[1m\033[32m%s\033[0m\n" % message.message
+        elif message.level <= LEVEL_WARNING:
+            return "\033[1m\033[33m%s\033[0m\n" % message.message
+        elif message.level <= LEVEL_ERROR:
+            return "\033[1m\033[31m%s\033[0m\n" % message.message
+        else:
+            return "\033[30m%s\033[0m\n" % message.message
 
 def __format_time_message(message):
     if message.level <= LEVEL_DEBUG:
