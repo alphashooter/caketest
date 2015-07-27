@@ -109,12 +109,12 @@ class ConfigParser(object):
 
     def check_indent(self, strict=True):
         if self.indent > 0:
-            if not self.skip(r"(?:\t|\s{4,4}){%d,%d}(?=\S)" % (self.indent, self.indent), False):
-                if strict and self.test(r"(?:\t|\s{4,4}){%d,%d}(?=\s)" % (self.indent, self.indent)):
+            if not self.skip(r"(?:\t|\s{4,4}){%d,%d}(?=\S)" % (self.indent, self.indent), False, forward=""):
+                if strict and self.test(r"(?:\t|\s{4,4}){%d,%d}(?=\s)" % (self.indent, self.indent), forward=""):
                     raise RuntimeError(self.format_line_parse_error("Invalid indentation."))
                 return False
         else:
-            if strict and self.test(r"\s"):
+            if strict and self.test(r"\s", forward=""):
                 raise RuntimeError(self.format_line_parse_error("Invalid indentation."))
             return not self.check_end()
         return True
