@@ -33,6 +33,6 @@ for message in friend.messages:
 
 # Заодно проверим, что второе сообщение все-таки не дошло:
 if len( filter(lambda message: bool(message.type == MessageType.LIFE), friend.messages) ) > 1: # Должно быть всего одно сообщение.
-    raise RuntimeError("Test failed: life.")  # Прерываем тест
-if len( filter(lambda message: bool(message.type == MessageType.HELP), friend.messages) ) > 1:
-    raise RuntimeError("Test failed: fuel.")
+    raise RuntimeError("Duplicate life messages.")  # Прерываем тест
+if len( filter(lambda message: bool(message.type == MessageType.FUEL), friend.messages) ) > 1:
+    raise RuntimeError("Duplicate fuel messages.")

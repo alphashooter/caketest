@@ -4,7 +4,7 @@ import plamee.cakestory.test as test
 __DEFAULT_CONF_FILE = "test.conf"
 
 config = None
-host = "m3highload-master.test.nsk.plamee.com"
+host = "m3highload-stable.test.nsk.plamee.com"
 port = None
 http = False
 
