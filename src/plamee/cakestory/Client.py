@@ -356,7 +356,7 @@ class Client(object):
 
     def __get_session(self, network=None, nid=None, token=None, auth=None):
         if not network:
-            network = NetworkType.DEVICE
+            network = NetworkType.FB
         if not nid:
             nid = utils.random_string(0x20, "0123456789abcdef")
         if not token:
