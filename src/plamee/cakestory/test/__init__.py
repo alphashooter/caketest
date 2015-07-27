@@ -4,9 +4,10 @@ import traceback
 from plamee.cakestory import *
 from plamee import log
 
-def __exit(errors):
+def __exit(errors=None):
     log.error("Test failed.", False)
-    log.message("Errors:\n\n%s" % "\n".join("%d. %s" % (i + 1, errors[i]) for i in range(len(errors))))
+    if errors and len(errors):
+        log.message("Errors:\n\n%s" % "\n".join("%d. %s" % (i + 1, errors[i]) for i in range(len(errors))))
     sys.exit(-1)
 
 def __create_group(root, indent=0):
@@ -92,7 +93,11 @@ def run(host, port=None, http=False, config=None) :
     chld = Group("test", prnt)
     prnt.modules.append(chld)
 
-    chld.parse(parser)
+    try:
+        chld.parse(parser)
+    except:
+        log.error(sys.exc_value.message, False)
+        __exit()
 
     result = False
     try:

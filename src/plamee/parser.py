@@ -11,33 +11,62 @@ class Parser(object):
         self.__indent = indent
         self.__initial = True
 
-    def test(self, pattern):
+    def test(self, pattern, forward=r"\W|$"):
         pos = self.__pos
-        result = self.skip(pattern, False)
+        result = self.skip(pattern, False, forward=forward)
         self.__pos = pos
         return result
 
-    def skip(self, pattern, strict=True):
-        return self.get(pattern, strict) is not None
+    def skip(self, pattern, strict=True, name=None, forward=r"\W|$"):
+        return self.get(pattern, strict, name, forward) is not None
 
-    def get(self, pattern, strict=True):
+    def format_line_parse_error(self, message):
+        return "%s\n  File '%s', line %d\n    %s" % (message, self.__file, self.__linenum, self.get_line())
+
+    def format_pattern_parse_error(self, name):
+        parser = Parser(self.__file, self.__pos)
+
+        if not self.__initial:
+            parser.skip(r"( |\t)+", False, forward="")
+
+        result = None
+        if parser.test(r"\r?\n", forward=""):
+            result = "end of line"
+        else:
+            if parser.test(r"\W"):
+                result = "'%s'" % parser.get(r"\W", forward="")
+            else:
+                result = "'%s'" % parser.get(r"\w(?:\w|-)+", forward="")
+
+        return self.format_line_parse_error("Expected %s but got %s." % (name, result))
+
+    def get(self, pattern, strict=True, name=None, forward=r"\W|$"):
         if self.check_end():
             if strict:
-                raise RuntimeError("Parse error")
+                if name is None:
+                    name = "'%s'" % pattern
+                raise RuntimeError(self.format_pattern_parse_error(name))
             else:
                 return None
 
         pos = self.__pos
 
         if not self.__initial:
-            while str(self.__input[self.__pos]) == " ":
+            ch = str(self.__input[self.__pos])
+            while ch == " " or ch == "\t":
                 self.__pos += 1
+                ch = str(self.__input[self.__pos])
+
+        if forward:
+            pattern = "%s(?=%s)" % (pattern, forward)
 
         result = re.match(pattern, self.__input[self.__pos:])
         if result is None:
             self.__pos = pos
             if strict:
-                raise RuntimeError("Parse error")
+                if name is None:
+                    name = "'%s'" % pattern
+                raise RuntimeError(self.format_pattern_parse_error(name))
             else:
                 return None
 
@@ -64,14 +93,14 @@ class Parser(object):
                 return False
 
         if not self.check_end():
-            if not self.skip(r"\r?\n", strict):
+            if not self.skip(r"\r?\n", strict, "end of line", forward=""):
                 self.__pos = pos
                 return False
 
             self.__linenum += 1
             self.__line = self.__pos
 
-            while self.skip(r"\r?\n", False):
+            while self.skip(r"\r?\n", False, forward=""):
                 self.__linenum += 1
                 self.__line = self.__pos
 
@@ -82,9 +111,11 @@ class Parser(object):
         if self.indent > 0:
             if not self.skip(r"(?:\t|\s{4,4}){%d,%d}(?=\S)" % (self.indent, self.indent), False):
                 if strict and self.test(r"(?:\t|\s{4,4}){%d,%d}(?=\s)" % (self.indent, self.indent)):
-                    raise RuntimeError("Invalid indentation at line %s:%d '%s'" % (self.__file, self.__linenum, self.get_line()))
+                    raise RuntimeError(self.format_line_parse_error("Invalid indentation."))
                 return False
         else:
+            if strict and self.test(r"\s"):
+                raise RuntimeError(self.format_line_parse_error("Invalid indentation."))
             return not self.check_end()
         return True
 
@@ -139,8 +170,12 @@ class Group(Runnable, Parsable):
         return exists(self.get_path()) and isdir(self.get_path())
 
     def parse(self, parser):
+        parser.end_line(strict=False)
+
         while parser.check_indent():
-            if parser.skip("ignore", False):
+            identifier = parser.get(r"[a-zA-Z_](?:\w|\d)*", name="identifier")
+
+            if identifier == "ignore":
                 if parser.skip("failed", False):
                     self.ignore_failed = True
                     parser.end_line()
@@ -148,10 +183,10 @@ class Group(Runnable, Parsable):
                     self.ignore_non_existent = True
                     parser.end_line()
                 else:
-                    raise RuntimeError("Invalid ignore flag in line '%s'" % parser.get_line())
+                    raise RuntimeError(parser.format_pattern_parse_error("'non-existent' or 'failed'"))
 
-            elif parser.skip("group", False):
-                name = parser.get(r"\w(?:\w|\d)*")
+            elif identifier == "group":
+                name = parser.get(r"[a-zA-Z_](?:\w|\d)*", name="identifier")
                 if parser.test(r":"):
                     parser.end_line(":")
                     parser.indent += 1
@@ -160,8 +195,8 @@ class Group(Runnable, Parsable):
                 else:
                     self.modules.append(Group(name, self, dir=self.dir))
 
-            elif parser.skip("module", False):
-                name = parser.get(r"\w(?:\w|\d)*")
+            elif identifier == "module":
+                name = parser.get(r"[a-zA-Z_](?:\w|\d)*", name="identifier")
                 if parser.test(r":"):
                     parser.end_line(":")
                     parser.indent += 1
@@ -172,7 +207,7 @@ class Group(Runnable, Parsable):
                     self.modules.append(Module(name, self, dir=self.dir))
 
             else:
-                raise RuntimeError("Unknown command %s" % parser.get(r".*?(?=\s)", False))
+                raise RuntimeError(parser.format_line_parse_error("Unknown identifier '%s'." % identifier))
 
     def run(self):
         import sys, traceback
