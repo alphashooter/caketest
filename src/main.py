@@ -1,7 +1,7 @@
 import plamee.log as log
 import plamee.cakestory.test as test
 
-__DEFAULT_CONF_FILE = "./test.conf"
+__DEFAULT_CONF_FILE = "test.conf"
 
 config = None
 host = "m3highload-master.test.nsk.plamee.com"
@@ -9,8 +9,7 @@ port = None
 http = False
 
 def load_config(file):
-    from os.path import exists, isfile
-    import json
+    from os.path import exists, isfile, dirname, join, abspath, normpath
 
     global config
 
@@ -22,12 +21,17 @@ def load_config(file):
         default = True
 
     if not exists(file) or not isfile(file):
+        file = join(join(dirname(__file__), "../"), file)
+
+    file = normpath(abspath(file))
+
+    if not exists(file) or not isfile(file):
         if default:
             log.warn("Config file '%s' is not found." % file)
         else:
             log.error("Config file '%s' is not found." % file)
     else:
-        config = json.loads(open(file, "r").read())
+        config = file
 
 
 def init():
