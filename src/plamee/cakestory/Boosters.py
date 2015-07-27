@@ -34,18 +34,19 @@ class BoosterType:
     BOSS_PROTECTION = None
     EXTRA_MOVES = None
 
-    def __init__(self, value):
+    def __init__(self, value, for_buy=True):
         value = str(value)
         if not value in BoosterType.NAMES:
             raise RuntimeError("Invalid type %s." % value)
         self.value = value
+        self.for_buy = for_buy
 
     def __str__(self):
         return self.value
 
 
 BoosterType.PASTRY_TONGS = BoosterType("pastry_tongs")
-BoosterType.GIFT_MOVES = BoosterType("gingerbread_man")
+BoosterType.GIFT_MOVES = BoosterType("gingerbread_man", False)
 BoosterType.SPATULA = BoosterType("confectionery_blade")
 BoosterType.RAINBOW_CUPCAKE = BoosterType("rainbow_cake")
 BoosterType.PASTRY_BAG = BoosterType("pastry_bag")
@@ -72,7 +73,7 @@ class Booster(object):
         """
 
         self.__client = client
-        self.__type = type
+        self.__type = BoosterType(type)
 
     def __convert_count(self, count):
         if self.pack_count == 0:
@@ -93,9 +94,8 @@ class Booster(object):
 
         packs_count = self.__convert_count(count)
         for i in range(packs_count):
-            if not Net.send(Commands.BuyBoosterCommand(self.__client, self.__type)).rejected:
-                self.set_count(self.get_count() + self.pack_count)
-            else:
+            cmd = Net.send(Commands.BuyBoosterCommand(self.__client, self.__type))
+            if cmd.rejected:
                 return False
         return True
 
@@ -163,8 +163,11 @@ class Booster(object):
         if not network in self.__client.defs.social_networks:
             network = "default"
         if str(self.__type) in self.__client.defs.social_networks[network]["game_items"]["booster_packs"]:
-            return sum(self.__client.defs.social_networks[network]["game_items"]["booster_packs"][self.__type]["contents"].values())
+            return self.__client.defs.social_networks[network]["game_items"]["booster_packs"][self.__type]["contents"][str(self.__type)]
         return 0
+
+    def get_level(self):
+        return int(self.__client.defs.boosters[str(self.__type)]["require"]["level"])
 
     def get_type(self):
         """
@@ -172,6 +175,9 @@ class Booster(object):
         :rtype: BoosterType
         """
         return BoosterType(self.__type)
+
+    def get_for_buy(self):
+        return self.get_pack_count() != 0
 
     def get_count(self):
         """
@@ -189,6 +195,8 @@ class Booster(object):
     count = property(get_count, set_count)
     pack_price = property(get_pack_price)
     pack_count = property(get_pack_count)
+    level = property(get_level)
+    for_buy = property(get_for_buy)
 
 
 class Boosters(object):

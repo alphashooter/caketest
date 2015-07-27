@@ -196,6 +196,12 @@ class ExecuteCommand(ServerCommand):
                     self.rejected = True
                     break
         self.__client.state.merge(response)
+        for event in response["events"]:
+            for event_name in event:
+                if event_name == "add_boosters":
+                    for booster_name in event[event_name]:
+                        booster = self.__client.boosters[booster_name]
+                        booster.set_count(booster.get_count() + event[event_name][booster_name]["count"])
 
     client = property(__get_client)
 

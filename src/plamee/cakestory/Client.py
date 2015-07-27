@@ -285,6 +285,10 @@ class ClientDefs(object):
         self.__autoload()
         return self.__data["social_networks"]
 
+    def get_boosters(self):
+        self.__autoload()
+        return self.__data["boosters"]
+
     def get_unlock_price(self, count):
         self.__autoload()
         if count > 0:
@@ -299,6 +303,7 @@ class ClientDefs(object):
     social_networks = property(get_social_networks)
     mapscreen = property(get_mapscreen)
     chapters = property(get_chapters)
+    boosters = property(get_boosters)
 
 
 class Client(object):
