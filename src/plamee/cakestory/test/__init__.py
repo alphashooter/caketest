@@ -66,7 +66,7 @@ def __create_config(root):
 
 def run(host, port=None, http=False, config=None) :
     from os.path import dirname, normpath, join
-    from plamee.parser import Parser, Group
+    from plamee.config import ConfigParser, Group
 
     Net.connect(host=host, port=port, http=http)
 
@@ -78,7 +78,7 @@ def run(host, port=None, http=False, config=None) :
         file.write(__create_config(dir))
         log.debug("Generated configuration file:\n\n%s" % config)
 
-    parser = Parser(config)
+    parser = ConfigParser(config)
 
     root = Group("plamee", dir=normpath(join(dir, "../../../")))
 

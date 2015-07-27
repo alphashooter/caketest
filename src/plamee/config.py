@@ -1,7 +1,7 @@
 import re
 from plamee import log
 
-class Parser(object):
+class ConfigParser(object):
     def __init__(self, file, pos=0, indent=0):
         self.__file = file
         self.__input = open(file, "r").read()
@@ -24,7 +24,7 @@ class Parser(object):
         return "%s\n  File '%s', line %d\n    %s" % (message, self.__file, self.__linenum, self.get_line())
 
     def format_pattern_parse_error(self, name):
-        parser = Parser(self.__file, self.__pos)
+        parser = ConfigParser(self.__file, self.__pos)
 
         if not self.__initial:
             parser.skip(r"( |\t)+", False, forward="")
