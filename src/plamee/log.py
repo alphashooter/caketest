@@ -2,9 +2,10 @@ __messages = []
 
 LEVEL_DEBUG = 0
 LEVEL_INFO = 1
-LEVEL_WARNING = 2
-LEVEL_ERROR = 3
-LEVEL_MESSAGE = 4
+LEVEL_OK = 2
+LEVEL_WARNING = 3
+LEVEL_ERROR = 4
+LEVEL_MESSAGE = 5
 
 level = 1
 file = None
@@ -23,17 +24,21 @@ def __format_message(message):
         return "\033[90m%s\033[0m\n" % message.message
     elif message.level <= LEVEL_INFO:
         return "\033[1m\033[30m%s\033[0m\n" % message.message
+    elif message.level <= LEVEL_OK:
+        return "\033[1m\033[32m%s\033[0m\n" % message.message
     elif message.level <= LEVEL_WARNING:
         return "\033[1m\033[33m%s\033[0m\n" % message.message
     elif message.level <= LEVEL_ERROR:
         return "\033[1m\033[31m%s\033[0m\n" % message.message
     else:
-        return "\033[1m\033[30m%s\033[0m\n" % message.message
+        return "\033[30m%s\033[0m\n" % message.message
 
 def __format_time_message(message):
     if message.level <= LEVEL_DEBUG:
         return __convert_message("DEBUG", message.message)
     elif message.level <= LEVEL_INFO:
+        return __convert_message("INFO", message.message)
+    elif message.level <= LEVEL_OK:
         return __convert_message("INFO", message.message)
     elif message.level <= LEVEL_WARNING:
         return __convert_message("WARNING", message.message)
@@ -61,6 +66,9 @@ def debug(message):
 
 def info(message):
     log(LEVEL_INFO, message)
+
+def ok(message):
+    log(LEVEL_OK, message)
 
 def warn(message):
     log(LEVEL_WARNING, message)
