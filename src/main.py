@@ -1,7 +1,7 @@
 import plamee.log as log
 import plamee.cakestory.test as test
 
-__DEFAULT_CONF_FILE = "test.conf"
+__DEFAULT_CONF_FILE = "global.conf"
 
 config = None
 host = "m3highload-stable.test.nsk.plamee.com"
