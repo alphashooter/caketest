@@ -11,14 +11,14 @@ class ConfigParser(object):
         self.__indent = indent
         self.__initial = True
 
-    def test(self, pattern, forward=r"\W|$"):
+    def test(self, pattern):
         pos = self.__pos
-        result = self.skip(pattern, False, forward=forward)
+        result = self.skip(pattern, False)
         self.__pos = pos
         return result
 
-    def skip(self, pattern, strict=True, name=None, forward=r"\W|$"):
-        return self.get(pattern, strict, name, forward) is not None
+    def skip(self, pattern, strict=True, name=None):
+        return self.get(pattern, strict, name) is not None
 
     def format_line_parse_error(self, message):
         return "%s\n  File '%s', line %d\n    %s" % (message, self.__file, self.__linenum, self.get_line())
@@ -27,10 +27,10 @@ class ConfigParser(object):
         parser = ConfigParser(self.__file, self.__pos)
 
         if not self.__initial:
-            parser.skip(r"( |\t)+", False, forward="")
+            parser.skip(r"( |\t)+", False)
 
         result = None
-        if parser.test(r"\r?\n", forward=""):
+        if parser.test(r"\r?\n"):
             result = "end of line"
         else:
             if parser.test(r"\W"):
@@ -40,7 +40,7 @@ class ConfigParser(object):
 
         return self.format_line_parse_error("Expected %s but got %s." % (name, result))
 
-    def get(self, pattern, strict=True, name=None, forward=r"\W|$"):
+    def get(self, pattern, strict=True, name=None):
         if self.check_end():
             if strict:
                 if name is None:
@@ -56,9 +56,6 @@ class ConfigParser(object):
             while ch == " " or ch == "\t":
                 self.__pos += 1
                 ch = str(self.__input[self.__pos])
-
-        if forward:
-            pattern = "%s(?=%s)" % (pattern, forward)
 
         result = re.match(pattern, self.__input[self.__pos:])
         if result is None:
@@ -93,14 +90,14 @@ class ConfigParser(object):
                 return False
 
         if not self.check_end():
-            if not self.skip(r"\r?\n", strict, "end of line", forward=""):
+            if not self.skip(r"\r?\n", strict, "end of line"):
                 self.__pos = pos
                 return False
 
             self.__linenum += 1
             self.__line = self.__pos
 
-            while self.skip(r"\r?\n", False, forward=""):
+            while self.skip(r"\r?\n", False):
                 self.__linenum += 1
                 self.__line = self.__pos
 
@@ -109,12 +106,12 @@ class ConfigParser(object):
 
     def check_indent(self, strict=True):
         if self.indent > 0:
-            if not self.skip(r"(?:\t|\s{4,4}){%d,%d}(?=\S)" % (self.indent, self.indent), False, forward=""):
-                if strict and self.test(r"(?:\t|\s{4,4}){%d,%d}(?=\s)" % (self.indent, self.indent), forward=""):
+            if not self.skip(r"(?:\t|\s{4,4}){%d,%d}(?=\S)" % (self.indent, self.indent), False):
+                if strict and self.test(r"(?:\t|\s{4,4}){%d,%d}(?=\s)" % (self.indent, self.indent)):
                     raise RuntimeError(self.format_line_parse_error("Invalid indentation."))
                 return False
         else:
-            if strict and self.test(r"\s", forward=""):
+            if strict and self.test(r" |\t"):
                 raise RuntimeError(self.format_line_parse_error("Invalid indentation."))
             return not self.check_end()
         return True
@@ -193,6 +190,7 @@ class Group(Runnable, Parsable):
                     self.modules.append(Group(name, self, parser, dir=self.dir))
                     parser.indent -= 1
                 else:
+                    parser.end_line()
                     self.modules.append(Group(name, self, dir=self.dir))
 
             elif identifier == "module":
@@ -215,6 +213,12 @@ class Group(Runnable, Parsable):
         result = True
 
         log.info("Starting group '%s'..." % self.name)
+
+        try:
+            __import__(self.fullname)
+        except:
+            log.error("Error occurred during initialization of package '%s'." % self.fullname, False)
+            raise
 
         for module in self.modules:
             if not module.exists:
