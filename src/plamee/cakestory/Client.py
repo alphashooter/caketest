@@ -222,9 +222,14 @@ class ClientState(object):
         self.__autoload()
         return self.__data["defs_hash"]
 
+    def get_group(self):
+        self.__autoload()
+        return self.__data["user_data"]["group"]
+
     is_loaded = property(get_is_loaded)
 
     user_id = property(get_user_id)
+    group = property(get_group)
     progress = property(get_progress)
     chapters = property(get_chapters)
     real_balance = property(get_real_balance, set_real_balance)
@@ -649,7 +654,11 @@ class Client(object):
     def set_game_balance(self, value):
         self.state.set_game_balance(value)
 
+    def get_group(self):
+        return self.state.get_group()
+
     user_id = property(get_user_id)
+    group = property(get_group)
     progress = property(get_progress)
     real_balance = property(get_real_balance, set_real_balance)
     game_balacne = property(get_game_balance, set_game_balance)
