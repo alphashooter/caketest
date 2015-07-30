@@ -310,7 +310,7 @@ class Chapter(object):
         :rtype: list
         """
         if self.qualified_id in self.__client.state.chapters and "unlocks" in self.__client.state.chapters[self.qualified_id]:
-            return list(self.__client.state.chapters[self.qualified_id]["unlocks"])
+            return list(self.__client.state.chapters[self.qualified_id]["unlocks_1"])
         return list()
 
     def get_locks_count(self):
@@ -318,7 +318,7 @@ class Chapter(object):
         :return: Number of chapter locks.
         :rtype: int
         """
-        return int(self.__client.defs.chapters[self.qualified_id]["unlocks_count"])
+        return int(self.__client.defs.chapters[self.qualified_id]["unlocks_count_1"])
 
     def get_unlocks_count(self):
         """

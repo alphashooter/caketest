@@ -274,7 +274,7 @@ class LoseLevelCommand(ExecuteCommand):
 
 class UnlockChapterCommand(ExecuteCommand):
     def __init__(self, client):
-        ExecuteCommand.__init__(self, client, "unlock_chapter", {})
+        ExecuteCommand.__init__(self, client, "unlock_chapter", {"api_version": "1"})
 
 
 class BuyChapterUnlocksCommand(ExecuteCommand):
@@ -282,7 +282,7 @@ class BuyChapterUnlocksCommand(ExecuteCommand):
         network = str(client.network)
         if not network in client.defs.social_networks:
             network = "default"
-        ExecuteCommand.__init__(self, client, "buy_chapter_unlocks", {"network_code": network})
+        ExecuteCommand.__init__(self, client, "buy_chapter_unlocks", {"network_code": network, "api_version": "1"})
 
 
 class BuyBoosterCommand(ExecuteCommand):
