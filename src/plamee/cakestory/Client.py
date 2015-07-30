@@ -23,11 +23,12 @@ class NetworkType:
     MM = None
     VK = None
 
-    def __init__(self, value):
+    def __init__(self, value, mobile=False):
         value = str(value)
         if not value in self.NAMES:
             raise RuntimeError("Network %s is not found." % value)
         self.value = value
+        self.mobile = mobile
 
     def __str__(self):
         return self.value
@@ -39,7 +40,7 @@ class NetworkType:
         return self.value != str(other)
 
 
-NetworkType.DEVICE = NetworkType("device")
+NetworkType.DEVICE = NetworkType("device", True)
 NetworkType.FB = NetworkType("FB")
 NetworkType.OK = NetworkType("OK")
 NetworkType.MM = NetworkType("MM")
@@ -226,6 +227,9 @@ class ClientState(object):
         self.__autoload()
         return self.__data["user_data"]["group"]
 
+    def __getitem__(self, item):
+        return self.__data[item]
+
     is_loaded = property(get_is_loaded)
 
     user_id = property(get_user_id)
@@ -302,6 +306,9 @@ class ClientDefs(object):
                 network = "default"
             return self.social_networks[network]["game_items"]["unlocks"][count]["price"]["real_balance"]
         return 0
+
+    def __getitem__(self, item):
+        return self.__data[item]
 
     is_loaded = property(get_is_loaded)
 
