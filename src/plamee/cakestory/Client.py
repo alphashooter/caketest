@@ -228,7 +228,12 @@ class ClientState(object):
         return self.__data["user_data"]["group"]
 
     def __getitem__(self, item):
+        self.__autoload()
         return self.__data[item]
+
+    def __contains__(self, item):
+        self.__autoload()
+        return item in self.__data
 
     is_loaded = property(get_is_loaded)
 
@@ -308,7 +313,12 @@ class ClientDefs(object):
         return 0
 
     def __getitem__(self, item):
+        self.__autoload()
         return self.__data[item]
+
+    def __contains__(self, item):
+        self.__autoload()
+        return item in self.__data
 
     is_loaded = property(get_is_loaded)
 
