@@ -20,6 +20,8 @@ class Connection:
             return "|".join("[%s=%s]" % (key, Connection.get_request_string(data[key])) for key in sorted(list(data.keys())))
         elif isinstance(data, list):
             return "|".join("[%d=%s]" % (key, Connection.get_request_string(data[key])) for key in range(len(data)))
+        elif isinstance(data, bool):
+            return "true" if data else "false"
         else:
             return str(data)
 
