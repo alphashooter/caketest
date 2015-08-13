@@ -136,6 +136,10 @@ class ClientState(object):
         else:
             self.__data = data
 
+    def get_data(self):
+        self.__autoload()
+        return self.__data
+
     def get_is_loaded(self):
         """
         :return: True if state is loaded, False otherwise.
@@ -237,6 +241,8 @@ class ClientState(object):
 
     is_loaded = property(get_is_loaded)
 
+    data = property(get_data)
+
     user_id = property(get_user_id)
     group = property(get_group)
     progress = property(get_progress)
@@ -280,6 +286,10 @@ class ClientDefs(object):
         """
         self.load()
 
+    def get_data(self):
+        self.__autoload()
+        return self.__data
+
     def get_is_loaded(self):
         """
         :return: True if defs is loaded, False otherwise.
@@ -321,6 +331,8 @@ class ClientDefs(object):
         return item in self.__data
 
     is_loaded = property(get_is_loaded)
+
+    data = property(get_data)
 
     social_networks = property(get_social_networks)
     mapscreen = property(get_mapscreen)

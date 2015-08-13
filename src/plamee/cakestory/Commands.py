@@ -219,7 +219,7 @@ class FinishLevelCommand(ExecuteCommand):
             params["used_lives"] = int(used_lives)
         if used_boosters is not None:
             if isinstance(used_boosters, list):
-                used_boosters_map = dict()
+                used_boosters_map = utils.sdict()
                 for i in range(len(used_boosters)):
                     used_boosters_map[used_boosters[i]] = used_boosters_map[used_boosters[i]] + 1 if used_boosters[i] in used_boosters_map else 1
                 params["used_boosters"] = used_boosters_map

@@ -1,7 +1,7 @@
 class sdict(dict):
     @staticmethod
     def __convert_key(key):
-        return unicode(key).encode("utf-8")
+        return unicode(key)
 
     def __init__(self, iterable=None, **kwargs):
         dict.__init__(self)
@@ -23,6 +23,30 @@ class sdict(dict):
     def has_key(self, k):
         return self.__contains__(k)
 
+    def get_dotted(self, key):
+        fields = str(key).split(".")
+        value = self
+        for field in fields:
+            try:
+                value = value[field]
+            except:
+                return None
+        return value
+
+    def set_dotted(self, key, value):
+        fields = str(key).split(".")
+        target = self
+        for field in fields[:-1]:
+            target = target[field]
+        target[fields[-1]] = value
+
+    def delete_dotted(self, key):
+        fields = str(key).split(".")
+        target = self
+        for field in fields[:-1]:
+            target = target[field]
+        del target[fields[-1]]
+
     def __contains__(self, item):
         return dict.__contains__(self, sdict.__convert_key(item))
 
@@ -31,6 +55,22 @@ class sdict(dict):
 
     def __setitem__(self, item, value):
         return dict.__setitem__(self, sdict.__convert_key(item), value)
+
+    def __delitem__(self, key):
+        return dict.__delitem__(self, sdict.__convert_key(key))
+
+    def __eq__(self, other):
+        if not isinstance(other, dict):
+            return False
+        if sorted(other.keys()) != sorted(self.keys()):
+            return False
+        for key in self.keys():
+            if self[key] != other[key]:
+                return False
+        return True
+
+    def __ne__(self, other):
+        return not self.__eq__(other)
 
 
 def merge_objects(obj1, obj2):

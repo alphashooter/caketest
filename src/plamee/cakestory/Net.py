@@ -58,7 +58,7 @@ class Connection:
         log.debug("Server response\n" \
               "Data:    %s\n" % data)
 
-        command.process(utils.sdict(json.loads(data)))
+        command.process(utils.sdict(json.loads(data.decode("utf-8"))))
         return command
 
     def send_get(self, command):
@@ -84,7 +84,7 @@ class Connection:
         log.debug("Server response\n" \
               "Data:    %s\n" % data)
 
-        command.process(utils.sdict(json.loads(data)))
+        command.process(utils.sdict(json.loads(data.decode("utf-8"))))
         return command
 
     def send(self, command):

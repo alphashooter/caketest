@@ -201,7 +201,7 @@ class Level(object):
                 if not isinstance(booster, Boosters.Booster):
                     booster = self.__client.boosters[booster]
                 if booster.count == 0:
-                    booster.buy()
+                    booster.force_buy()
                 booster.spend()
 
         cmd = None

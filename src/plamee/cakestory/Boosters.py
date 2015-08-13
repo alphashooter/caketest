@@ -75,6 +75,9 @@ class Booster(object):
         self.__client = client
         self.__type = BoosterType(type)
 
+    def __str__(self):
+        return str(self.__type)
+
     def __convert_count(self, count):
         if self.pack_count == 0:
             raise RuntimeError("Pack is not for sell.")
