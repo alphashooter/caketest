@@ -31,11 +31,31 @@ def combination(n, k):
 
     return divident / divisor
 
-def get_error(nu, ng, p):
-    na = range(0, ng - 1) + range(ng + 1, nu)
-    da = map(lambda x: abs(1 - x / (nu * p)), na)
-    pa = map(lambda x: combination(nu, x) * pow(p, x) * pow(1.0 - p, nu - x), na)
-    return sum(map(lambda x: da[x] * pa[x], range(len(da))), 0)
+def get_error(real, expected):
+    return abs(1.0 - float(real) / float(expected))
+
+def get_max_error(count, expected, possibility):
+    deviation = 1.0
+    deviations = [deviation]
+
+    while len(deviations) <= count:
+        deviation -= 1.0 / expected
+        deviations.append(abs(deviation))
+
+    #
+
+    i = 0
+
+    weight = pow(1.0 - possibility, count)
+    result = weight * deviations[i]
+
+    while i < count:
+        weight *= (possibility / (1.0 - possibility)) * float(count - i) / float(i + 1)
+        i      += 1
+        result += weight * deviations[i]
+
+    return result
+
 
 def create_user():
     global requirements
@@ -100,11 +120,13 @@ def check_defs(users):
 
 def check_groups_1():
     global groups
+    global possibility
 
     # summary number of users in all groups
     N_g = sum(map(lambda group: group["size"], groups.values()), 0)
+    N_g = int(0.5 * N_g + 0.5)
     # number of users to be generated
-    N_u = int(0.5 * N_g / possibility)
+    N_u = int(N_g / possibility + 0.5)
 
     users  = create_users(N_u)
     mapped = dict()
@@ -117,9 +139,10 @@ def check_groups_1():
 
     S_g = sum(map(lambda group: len(mapped[group]) if group != "default" else 0, groups.keys()), 0)
 
-    deviation = abs(float(S_g) / (0.5 * N_g) - 1.0)
-    if deviation > get_error(N_u, int(0.5 * N_g), possibility):
-        raise RuntimeError("Invalid distribution first wave: expected deviation less than %d%% but got %d%%." % (100.0 * get_error(N_u, int(0.5 * N_g), possibility) + 0.5, 100.0 * deviation + 0.5))
+    error = get_error(S_g, N_g)
+    max_error = get_max_error(N_u, N_g, possibility)
+    if error > max_error:
+        raise RuntimeError("Invalid distribution for first wave: expected deviation not greater than %d%% but got %d%%." % (100.0 * max_error + 0.5, 100.0 * error + 0.5))
 
     check_defs(mapped)
 
@@ -131,8 +154,9 @@ def check_groups_2():
 
     # summary number of users in all groups
     N_g = sum(map(lambda group: group["size"], groups.values()), 0)
+    N_g = int(0.5 * N_g + 0.5)
     # number of users to be generated
-    N_u = int(0.5 * N_g / possibility)
+    N_u = int(N_g / possibility + 0.5)
 
     users  = create_users(N_u)
     mapped = dict()
@@ -145,9 +169,10 @@ def check_groups_2():
 
     S_g = sum(map(lambda group: len(mapped[group]) if group != "default" else 0, groups.keys()), 0)
 
-    deviation = abs(float(S_g) / (0.5 * N_g) - 1.0)
-    if deviation > get_error(N_u, int(0.5 * N_g), possibility):
-        raise RuntimeError("Invalid distribution second wave: expected deviation less than %d%% but got %d%%." % (100.0 * get_error(N_u, int(0.5 * N_g), possibility) + 0.5, 100.0 * deviation + 0.5))
+    error = get_error(S_g, N_g)
+    max_error = get_max_error(N_u, N_g, possibility)
+    if error > max_error:
+        raise RuntimeError("Invalid distribution for second wave: expected deviation not greater than %d%% but got %d%%." % (100.0 * max_error + 0.5, 100.0 * error + 0.5))
 
     check_defs(mapped)
 
@@ -191,7 +216,7 @@ mapped_tmp = check_groups_1()
 for group in mapped_tmp:
     mapped[group] += mapped_tmp[group]
 
-time.sleep(3600)
+time.sleep(4000)
 
 # Test 2:
 
@@ -199,7 +224,7 @@ mapped_tmp = check_groups_2()
 for group in mapped_tmp:
     mapped[group] += mapped_tmp[group]
 
-time.sleep(3600)
+time.sleep(4000)
 
 # Test 3:
 
