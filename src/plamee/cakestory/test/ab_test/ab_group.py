@@ -120,13 +120,17 @@ def check_defs(users):
 
 def check_groups_1():
     global groups
-    global possibility
 
     # summary number of users in all groups
     N_g = sum(map(lambda group: group["size"], groups.values()), 0)
     N_g = int(0.5 * N_g + 0.5)
+
     # number of users to be generated
-    N_u = int(N_g / possibility + 0.5)
+    N_u = int(1 + int(1 + N_g / speed_limit) / threshold)
+
+    possibility = threshold * speed_limit
+
+    #
 
     users  = create_users(N_u)
     mapped = dict()
@@ -155,8 +159,13 @@ def check_groups_2():
     # summary number of users in all groups
     N_g = sum(map(lambda group: group["size"], groups.values()), 0)
     N_g = int(0.5 * N_g + 0.5)
+
     # number of users to be generated
-    N_u = int(N_g / possibility + 0.5)
+    N_u = int(1 + int(1 + N_g / speed_limit) / threshold)
+
+    possibility = threshold * speed_limit
+
+    #
 
     users  = create_users(N_u)
     mapped = dict()
@@ -183,8 +192,12 @@ def check_groups_3():
 
     # summary number of users in all groups
     N_g = sum(map(lambda group: group["size"], groups.values()), 0)
+    N_g = int(0.5 * N_g + 0.5)
+
     # number of users to be generated
-    N_u = int(N_g / possibility)
+    N_u = 1 + int(N_g / speed_limit)
+
+    #
 
     users  = create_users(N_u)
     mapped = dict()
