@@ -1,13 +1,18 @@
 from plamee.cakestory import *
+from plamee import log
 
-import json
-from os.path import join, dirname
+tmp_client = Client()
+config = Net.send(Commands.ServerCommand("/defs", None, Net.RequestMethod.GET)).response
 
-config = json.loads(open(join(dirname(__file__), "config.json"), "r").read().decode("utf-8"))
+if "split_tests" in config:
+    config = config["split_tests"]
+else:
+    raise RuntimeError("Cannot find tests in defs.")
 
 ab_test_name = None
 for ab_test_name in config:
     config = config[ab_test_name]
+    break
 
 #threshold = config["threshold"]
 #if threshold > 1.0:
@@ -116,31 +121,38 @@ def create_users(num):
 
 def check_defs(users):
     default = users["default"]
-    default_defs = default[0].defs.data.copy()
 
-    for user in default[1:]:
-        if user.defs.data != default_defs:
-            raise RuntimeError("Defs in group 'default' are different.")
+    if len(default) > 0:
+        default_defs = default[0].defs.data.copy()
 
-    for group in users:
-        if group == "default":
-            continue
+        for user in default[1:]:
+            if user.defs.data != default_defs:
+                raise RuntimeError("Defs in group 'default' are different.")
 
-        group_defs = users[group][0].defs.data.copy()
-        for user in users[group][1:]:
-            if user.defs.data != group_defs:
-                raise RuntimeError("Defs in group '%s' are different." % group)
+        for group in users:
+            if group == "default":
+                continue
 
-        common_default_defs = default_defs.copy()
-        common_group_defs = group_defs.copy()
-        for prop in groups[group]["changes"]["defs"]:
-            common_default_defs.delete_dotted(prop)
-            common_group_defs.delete_dotted(prop)
-            if group_defs.get_dotted(prop) != groups[group]["changes"]["defs"][prop]:
-                raise RuntimeError("Defs changes check failed for group '%s'." % group)
+            if len(users[group]) > 0:
+                group_defs = users[group][0].defs.data.copy()
+                for user in users[group][1:]:
+                    if user.defs.data != group_defs:
+                        raise RuntimeError("Defs in group '%s' are different." % group)
 
-        if common_default_defs != common_group_defs:
-            raise RuntimeError("Defs for group '%s' has too many differences." % group)
+                common_default_defs = default_defs.copy()
+                common_group_defs = group_defs.copy()
+                for prop in groups[group]["changes"]["defs"]:
+                    common_default_defs.delete_dotted(prop)
+                    common_group_defs.delete_dotted(prop)
+                    if group_defs.get_dotted(prop) != groups[group]["changes"]["defs"][prop]:
+                        raise RuntimeError("Defs changes check failed for group '%s'." % group)
+
+                if common_default_defs != common_group_defs:
+                    raise RuntimeError("Defs for group '%s' has too many differences." % group)
+            else:
+                log.warn("No users in group '%s', cannot check defs." % group)
+    else:
+        log.warn("No users in group 'default', cannot check defs.")
 
 
 def check_groups_1():
