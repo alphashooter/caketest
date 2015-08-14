@@ -7,12 +7,18 @@ config = Net.send(Commands.ServerCommand("/defs", None, Net.RequestMethod.GET)).
 if "split_tests" in config:
     config = config["split_tests"]
 else:
-    raise RuntimeError("Cannot find tests in defs.")
+    raise RuntimeError("No A/B tests found.")
+
+if len(config.keys()) > 1:
+    raise RuntimeError("Cannot proccess more than 1 test at once but defs contain %d values: %s" % (len(config.keys()), ", ".join(config.keys())))
 
 ab_test_name = None
 for ab_test_name in config:
     config = config[ab_test_name]
     break
+
+if not ab_test_name:
+    raise RuntimeError("No A/B tests found.")
 
 #threshold = config["threshold"]
 #if threshold > 1.0:
