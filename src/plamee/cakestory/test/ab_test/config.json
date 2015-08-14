@@ -1,38 +1,28 @@
 {
-    "booster_teapot_price": {
-      "threshold": 0.7,
-      "speed_limit": 2,
-      "start_time": "Aug 14 2015 9:00:00",
-      "end_time": "Aug 14 2015 11:55:00",
-      "requirements": {},
-      "groups": {
-        "donuts_30": 100,
-        "donuts_40": 200
-      },
-      "name": "booster_teapot_price"
+    "threshold": 0.5,
+    "speed_limit": 0.5,
+    "start_time": "June 1 2015 18:32",
+    "end_time": "June 27 2015 18:32",
+    "requirements": {
+        "users_stats.is_new": true,
+        "users_stats.payment_count": [0]
     },
-    "level_field": {
-      "threshold": 0.7,
-      "speed_limit": 2,
-      "start_time": "Aug 14 2015 9:00:00",
-      "end_time": "Aug 14 2015 12:55:00",
-      "requirements": {},
-      "groups": {
-        "ing_field_2": 100,
-        "ing_field_3": 200
-      },
-      "name": "level_field"
-    },
-    "mixin_minimal_progress": {
-      "threshold": 0.7,
-      "speed_limit": 2,
-      "start_time": "Aug 14 2015 9:00:00",
-      "end_time": "Aug 14 2015 12:55:00",
-      "requirements": {},
-      "groups": {
-        "50": 100,
-        "200": 200
-      },
-      "name": "mixin_minimal_progress"
+    "groups": {
+        "group1": {
+            "size": 5,
+            "changes":{
+                "defs": {
+                    "payments.tier_1_fb.store.FB.price.USD": 3
+                }
+            }
+        },
+        "group2": {
+            "size": 5,
+            "changes": {
+                "defs": {
+                    "payments.tier_1_fb.store.FB.price.USD": 4
+                }
+            }
+        }
     }
 }
