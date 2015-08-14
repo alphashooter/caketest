@@ -1,0 +1,20 @@
+#!/bin/sh
+
+DIR=$(dirname ${BASH_SOURCE[0]})
+cd $DIR
+
+CONF_FILE=ab-test.conf.tmp
+
+> $CONF_FILE
+echo "group ab_test:" >> $CONF_FILE
+echo "    module ab_group" >> $CONF_FILE
+
+./m3highload-test --config $CONF_FILE --host m3highload-master.test.nsk.plamee.com --verbose  --log ./ab-test.log
+
+rm -rf $CONF_FILE
+
+echo "Log saved into $DIR/ab-test.log"
+echo
+cat ab-test.log
+
+exit 0
