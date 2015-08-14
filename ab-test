@@ -11,10 +11,10 @@ echo "    module ab_group" >> $CONF_FILE
 
 ./m3highload-test --config $CONF_FILE --host m3highload-master.test.nsk.plamee.com --verbose  --log ./ab-test.log
 
-rm -rf $CONF_FILE
+rm -f $CONF_FILE
 
+echo
 echo "Log saved into $DIR/ab-test.log"
 echo
-cat ab-test.log
 
 exit 0
