@@ -11,7 +11,7 @@ from os.path import join, dirname
 #
 
 
-__MAX_USERS_PER_TEST = 20
+__MAX_USERS_PER_TEST = 100
 
 
 global_config = json.loads(open(join(dirname(__file__), "config.json"), "r").read().decode("utf-8"))
