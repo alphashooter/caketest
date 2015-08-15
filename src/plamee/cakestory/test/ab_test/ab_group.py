@@ -1,7 +1,6 @@
 from plamee.cakestory import *
 from plamee import log
 
-tmp_client = Client()
 config = Net.send(Commands.ServerCommand("/defs", None, Net.RequestMethod.GET)).response
 
 if "split_tests" in config:
@@ -9,16 +8,20 @@ if "split_tests" in config:
 else:
     raise RuntimeError("No A/B tests found.")
 
+if len(config.keys()) > 0:
+    log.ok("A/B tests found: %s." % ", ".join(config.keys()))
+else:
+    raise RuntimeError("No A/B tests found.")
+
 if len(config.keys()) > 1:
-    raise RuntimeError("Cannot proccess more than 1 test at once but defs contain %d values: %s" % (len(config.keys()), ", ".join(config.keys())))
+    raise RuntimeError("Cannot proccess more than 1 test at once but defs contain %d values: %s." % (len(config.keys()), ", ".join(config.keys())))
 
 ab_test_name = None
 for ab_test_name in config:
     config = config[ab_test_name]
     break
 
-if not ab_test_name:
-    raise RuntimeError("No A/B tests found.")
+log.ok("Selected A/B test: %s." % ab_test_name)
 
 #threshold = config["threshold"]
 #if threshold > 1.0:
@@ -181,14 +184,17 @@ def check_groups_1():
     for group in groups:
         mapped[group] = list()
 
-    map(lambda user: mapped[user.state.group].append(user), users)
+    for user in users:
+        if not user.group in mapped:
+            raise RuntimeError("Undefined A/B group '%s' for user %d." % (user.group, user.id))
+        mapped[user.group].append(user)
 
     S_g = sum(map(lambda group: len(mapped[group]) if group != "default" else 0, groups.keys()), 0)
 
     error = get_error(S_g, N_g)
     max_error = get_max_error(N_u, N_g, possibility)
     if error > max_error:
-        raise RuntimeError("Invalid distribution for first wave: expected deviation not greater than %d%% but got %d%%." % (100.0 * max_error + 0.5, 100.0 * error + 0.5))
+        raise RuntimeError("Invalid distribution: expected deviation must not be greater than %d%% but got %d%%." % (100.0 * max_error + 0.5, 100.0 * error + 0.5))
 
     check_defs(mapped)
 
@@ -213,7 +219,11 @@ def check_groups_2():
     for group in groups:
         mapped[group] = list()
 
-    map(lambda user: mapped[user.state.group].append(user), users)
+    for user in users:
+        if not user.group in mapped:
+            raise RuntimeError("Undefined A/B group '%s' for user %d." % (user.group, user.id))
+        mapped[user.group].append(user)
+
     check_defs(mapped)
 
     return mapped
