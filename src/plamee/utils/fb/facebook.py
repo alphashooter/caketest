@@ -231,6 +231,7 @@ class FacebookResponse:
             if header[0] == "content-encoding":
                 # Unzip response data
                 if header[1] == "gzip":
+                    # TODO: Response unzipping via zlib, not gzip.
                     # ~magic~
                     tmp_gz = open("/tmp/fbresptmp", "wb")
                     tmp_gz.write(response)
