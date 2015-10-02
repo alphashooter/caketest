@@ -12,7 +12,7 @@ class OpenGraphDebugger(object):
         self.context = FacebookContext(user, password)
 
     def check_url(self, url):
-        # From request
+        # Form request
         request = self.__get_request()
         request.data["q"]       = url
         request.data["version"] = ""
