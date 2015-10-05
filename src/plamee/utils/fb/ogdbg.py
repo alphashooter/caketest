@@ -19,7 +19,7 @@ class OpenGraphDebugger(object):
 
         # Parse response
         response = request.evaluate()
-        OpenGraphDebugger.__parse_response(response)
+        return OpenGraphDebugger.__parse_response(str(response))
 
     def __get_request(self):
         request  = self.context.create_request(OpenGraphDebugger.FACEBOOK_DEBUGGER_HOST, None, None)
@@ -39,5 +39,27 @@ class OpenGraphDebugger(object):
 
     @staticmethod
     def __parse_response(response):
-        # TODO: Response parsing
-        pass
+        response = utils.html.remove_tags(response, "head")
+        response = utils.html.remove_tags(response, "script")
+        response = utils.html.remove_tags(response, "code")
+
+        tables = utils.html.get_tags(response, "table")
+
+        for i in range(len(tables)):
+            tables[i] = utils.html.remove_tags(tables[i], "span", None, True)
+            tables[i] = OpenGraphDebugger.__parse_table(tables[i])
+
+        return {
+            "status":   tables[0],
+            "tags":     tables[1],
+            "contents": tables[2]
+        }
+
+    @staticmethod
+    def __parse_table(table):
+        result = utils.html.get_tags(table, "tr")
+        for i in range(len(result)):
+            result[i] = utils.html.get_tags(result[i], "td")
+            for j in range(len(result[i])):
+                result[i][j] = utils.html.get_tag_data(result[i][j])
+        return result
