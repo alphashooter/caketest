@@ -1,7 +1,7 @@
 import plamee.utils as utils
 import plamee.utils.html
 
-from plamee.utils.fb.facebook import *
+from plamee.fb.facebook import *
 
 class OpenGraphDebugger(object):
 

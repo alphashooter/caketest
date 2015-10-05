@@ -4,7 +4,7 @@ import plamee.utils as utils
 import plamee.utils.html
 
 from plamee.cakestory import *
-from plamee.utils.fb.ogdbg import *
+from plamee.fb.ogdbg import *
 
 # Load defs
 defs = Net.send(Commands.ServerCommand("/defs?group=default", None, Net.RequestMethod.GET)).response
@@ -15,7 +15,7 @@ else:
     raise RuntimeError("Payments are not found in defs.")
 
 # Init OpenGraph debugger
-debugger = OpenGraphDebugger("a.p.strelkov@gmail.com", "stre1a")
+debugger = OpenGraphDebugger("a.strelkov@plamee.com", "0119643")
 
 for payment_name in defs:
     # Get payment config

@@ -6,6 +6,7 @@ import urllib
 import httplib
 import HTMLParser
 
+import plamee.log as log
 import plamee.utils as utils
 import plamee.utils.html
 
@@ -76,6 +77,7 @@ class FacebookContext(object):
     def create_request(self, host=None, url=None, data=None, follow_redirects=False):
         # Check if user is not logged in
         if not self.logged:
+            log.warn("Facebook: Need to sign in.")
             self.login()
 
         # Resolve target host
@@ -90,8 +92,10 @@ class FacebookContext(object):
 
     def login(self):
         # Get login form
+        log.debug("Facebook: Fetching login form...")
         response = FacebookRequest(self, FacebookContext.FACEBOOK_HOST, FacebookContext.FACEBOOK_LOGIN_URL).evaluate()
 
+        log.debug("Facebook: Parsing login form...")
         # Find JS cookies
         js_datr = re.search("\"_js_datr\",\\s*\"(.*?)\"",        response.response)
         js_gate = re.search("\"_js_reg_fb_gate\",\\s*\"(.*?)\"", response.response)
@@ -113,10 +117,12 @@ class FacebookContext(object):
         url = utils.html.get_tag_attr(form, "action")
 
         # Try to sign in
+        log.debug("Facebook: Trying to sign in as \"%s\" via %s..." % (data["email"], FacebookContext.FACEBOOK_HOST + url))
         response = FacebookRequest(self, FacebookContext.FACEBOOK_HOST, url, data).evaluate()
 
         # If redirect - OK
         if response.status == 302:
+            log.ok("Facebook: Signed in as \"%s\"" % data["email"])
             self.logged = True
         else:
             raise RuntimeError("Facebook sign-in failed.")
@@ -171,7 +177,8 @@ class FacebookRequest:
             if len(cookies) > 0:
                 headers["Cookie"] = "; ".join(cookies)
 
-        # Request login
+        # Send request
+        log.debug("Facebook: Sending request to %s..." % (self.host + url))
         connection = httplib.HTTPSConnection(host=self.host)
         connection.request(
             "GET" if self.data is None else "POST",
@@ -197,6 +204,7 @@ class FacebookRequest:
         if response.status != 200:
             # Redirect
             if response.status == 302:
+                log.warn("Facebook: %s requested redirect to %s." % (str(self.host + url), response.getheader("Location")))
                 if self.follow_redirects:
                     # Update referer
                     self.context.referer = "https://" + self.host + url
@@ -208,6 +216,7 @@ class FacebookRequest:
                 raise RuntimeError("Invalid server response status %d: %s" % (response.status, response.reason))
 
         # Update referer
+        log.ok("Facebook: Successful request to %s." % str(self.host + url))
         self.context.referer = "https://" + self.host + url
 
         # Return result
