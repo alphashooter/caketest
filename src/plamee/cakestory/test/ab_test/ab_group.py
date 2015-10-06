@@ -4,7 +4,12 @@ from plamee.cakestory import *
 from plamee import log
 
 def get_defs_config():
-    config = Net.send(Commands.ServerCommand("/defs?group=default", None, Net.RequestMethod.GET)).response
+    config = None
+
+    try:
+        Net.send(Commands.ServerCommand("/defs?group=default", None, Net.RequestMethod.GET)).response
+    except:
+        return None
 
     if "split_tests" in config:
         config = config["split_tests"]
