@@ -1,12 +1,37 @@
+import json
+
 from plamee.cakestory import *
 from plamee import log
 
-config = Net.send(Commands.ServerCommand("/defs", None, Net.RequestMethod.GET)).response
+def get_defs_config():
+    config = Net.send(Commands.ServerCommand("/defs?group=default", None, Net.RequestMethod.GET)).response
 
-if "split_tests" in config:
-    config = config["split_tests"]
-else:
-    raise RuntimeError("No A/B tests found.")
+    if "split_tests" in config:
+        config = config["split_tests"]
+    else:
+        return None
+
+    return config
+
+def get_local_config():
+    config = utils.fs.read(utils.fs.join_path("./ab-test-info"))
+    if config is None:
+        config = utils.fs.read(utils.fs.join_path("./../ab-test-info"))
+        if config is None:
+            return None
+    return json.loads(config)
+
+def get_config():
+    config = get_local_config()
+    if config is None:
+        config = get_defs_config()
+        if config is None:
+            raise RuntimeError("Cannot found A/B-test config.")
+    return config
+
+
+config = get_config()
+
 
 if len(config.keys()) > 0:
     log.ok("A/B tests found: %s." % ", ".join(config.keys()))
@@ -31,7 +56,6 @@ threshold    = min(config["threshold"], 1.0)
 #if speed_limit > 1.0:
 #   raise RuntimeError("Invalid speed limit value."
 speed_limit  = min(config["speed_limit"], 1.0)
-possibility  = float(threshold * speed_limit)
 requirements = config["requirements"]
 groups       = config["groups"]
 
@@ -167,13 +191,13 @@ def check_defs(users):
 def check_groups_1():
     global groups
 
+    possibility = min(threshold, speed_limit)
+
     # summary number of users in all groups
     N_g = sum(map(lambda group: group["size"], groups.values()), 0)
 
     # number of users to be generated
-    N_u = int(1 + int(1 + N_g / speed_limit) / threshold)
-
-    possibility = threshold * speed_limit
+    N_u = int(1 + N_g / possibility)
 
     #
 
@@ -186,7 +210,7 @@ def check_groups_1():
 
     for user in users:
         if not user.group in mapped:
-            raise RuntimeError("Undefined A/B group '%s' for user %d." % (user.group, user.id))
+            raise RuntimeError("Undefined A/B group '%s' for user %d." % (user.group, user.user_id))
         mapped[user.group].append(user)
 
     S_g = sum(map(lambda group: len(mapped[group]) if group != "default" else 0, groups.keys()), 0)
@@ -194,7 +218,9 @@ def check_groups_1():
     error = get_error(S_g, N_g)
     max_error = get_max_error(N_u, N_g, possibility)
     if error > max_error:
-        raise RuntimeError("Invalid distribution: expected deviation must not be greater than %d%% but got %d%%." % (100.0 * max_error + 0.5, 100.0 * error + 0.5))
+        raise RuntimeError(
+            str.format("Invalid distribution: expected deviation must not be greater than {:.2f}%% but got {:.2f}%%.", 100.0 * max_error, 100.0 * error)
+        )
 
     check_defs(mapped)
 
