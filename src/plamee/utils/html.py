@@ -82,6 +82,16 @@ class _GetTagsParser(HTMLParser.HTMLParser):
                 if pending_tag.counter == 0:
                     pending_tag.data_endpos = self.getpos()
 
+    def handle_entityref(self, name):
+        for pending_tag in self.__pending:
+            if pending_tag.counter == 1 and pending_tag.data_startpos is None:
+                pending_tag.data_startpos = self.getpos()
+
+    def handle_charref(self, name):
+        for pending_tag in self.__pending:
+            if pending_tag.counter == 1 and pending_tag.data_startpos is None:
+                pending_tag.data_startpos = self.getpos()
+
     def get_input(self):
         return self.__input
 
@@ -166,13 +176,23 @@ class _GetTagDataParser(HTMLParser.HTMLParser):
         if self.__startpos is None:
             self.__startpos = self.getpos()
 
+    def handle_endtag(self, tag):
+        self.__endpos = self.getpos()
+
     def handle_data(self, data):
         if self.__startpos is None:
             if not self.__is_first:
                 self.__startpos = self.getpos()
 
-    def handle_endtag(self, tag):
-        self.__endpos = self.getpos()
+    def handle_entityref(self, name):
+        if self.__startpos is None:
+            if not self.__is_first:
+                self.__startpos = self.getpos()
+
+    def handle_charref(self, name):
+        if self.__startpos is None:
+            if not self.__is_first:
+                self.__startpos = self.getpos()
 
     def get_result(self):
         if self.__startpos is None:
@@ -196,6 +216,68 @@ class _GetTagDataParser(HTMLParser.HTMLParser):
         end_pos   += self.__endpos[1]
 
         return self.__input[start_pos:end_pos]
+
+
+class _IndentParser(HTMLParser.HTMLParser):
+    def __init__(self):
+        self.__result        = ""
+        self.__depth         = 0
+        self.__prevent_br    = 0
+        self.__ignore_endtag = False
+        HTMLParser.HTMLParser.__init__(self)
+
+    def handle_starttag(self, tag, attrs):
+        text = self.get_starttag_text().strip()
+        if text[len(text)-2:] == "/>":
+            self.__ignore_endtag = True
+            self.__result += str.format(
+                "\n{: >%ds}{:s}" % (4 * self.__depth) if self.__prevent_br == 0 else "{:s}{:s}",
+                "",
+                "<%s %s/>" % (tag, reduce(lambda out, x: out + str("%s=\"%s\" " % (x[0], x[1])), attrs, ""))
+            )
+        else:
+            self.__result += str.format(
+                "\n{: >%ds}{:s}" % (4 * self.__depth) if self.__prevent_br == 0 else "{:s}{:s}",
+                "",
+                "<%s %s>" % (tag, reduce(lambda out, x: out + str("%s=\"%s\"" % (x[0], x[1])), attrs, ""))
+            )
+            if self.__prevent_br > 0:
+                self.__prevent_br += 1
+            self.__depth += 1
+
+    def handle_data(self, data):
+        if self.__prevent_br == 0 and self.__depth > 0:
+            self.__prevent_br = 1
+        self.__result += data
+
+    def handle_entityref(self, name):
+        if self.__prevent_br == 0 and self.__depth > 0:
+            self.__prevent_br = 1
+        self.__result += "&%s;" % name
+
+    def handle_charref(self, name):
+        if self.__prevent_br == 0 and self.__depth > 0:
+            self.__prevent_br = 1
+        self.__result += "&#%s;" % name
+
+    def handle_endtag(self, tag):
+        if self.__ignore_endtag:
+            self.__ignore_endtag = False
+            return
+
+        self.__depth -= 1
+        self.__result += str.format(
+            "\n{: >%ds}{:s}" % (4 * self.__depth) if self.__prevent_br == 0 else "{:s}{:s}",
+            "",
+            "</%s>" % tag
+        )
+
+        if self.__prevent_br > 0:
+            self.__prevent_br -= 1
+
+    def get_result(self):
+        return self.__result
+
 
 
 ######
@@ -328,6 +410,11 @@ def get_tag_data(input):
 def get_tag_attr(input, field):
     parser = _GetTagAttrParser(field)
     parser.feed(str(input))
+    return parser.get_result()
+
+def reindent(input):
+    parser = _IndentParser()
+    parser.feed(input)
     return parser.get_result()
 
 def unescape(input):
