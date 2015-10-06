@@ -95,6 +95,11 @@ class Connection:
         else:
             log.error("Unknown request method '%s'." % command.method)
 
+    def get_host(self):
+        return self.__connection.host
+
+    host = property(get_host)
+
 
 __connection = None
 
@@ -109,3 +114,7 @@ def send(command):
     if not __connection:
         raise RuntimeError("Connection must be inited.")
     return __connection.send(command)
+
+def get_host():
+    global __connection
+    return __connection.host
