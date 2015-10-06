@@ -4,7 +4,7 @@ SOURCE_DIR=$(dirname ${BASH_SOURCE[0]})
 WORKING_DIR=`pwd`
 
 CONFIG_FILE=$SOURCE_DIR/og-test.conf.tmp
-LOG_FILE=$WORKING_DIR/`date +%Y%m%d%H%M`_og-test.log
+LOG_FILE=$WORKING_DIR/og_test_`date +%Y%m%d%H%M`.log
 
 > $CONFIG_FILE
 echo "group opengraph:" >> $CONFIG_FILE
