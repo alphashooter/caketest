@@ -216,7 +216,7 @@ class FacebookRequest:
                 raise RuntimeError("Invalid server response status %d: %s" % (response.status, response.reason))
 
         # Update referer
-        log.ok("Facebook: Successful request to %s." % str(self.host + url))
+        log.debug("Facebook: Successful request to %s." % str(self.host + url))
         self.context.referer = "https://" + self.host + url
 
         # Return result
