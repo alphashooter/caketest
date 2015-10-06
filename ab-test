@@ -4,7 +4,7 @@ SOURCE_DIR=$(dirname ${BASH_SOURCE[0]})
 WORKING_DIR=`pwd`
 
 CONFIG_FILE=$SOURCE_DIR/ab-test.conf.tmp
-LOG_FILE=$WORKING_DIR/`date +%Y%m%d`_ab-test.log
+LOG_FILE=$WORKING_DIR/`date +%Y%m%d%H%M`_ab-test.log
 
 > $CONFIG_FILE
 echo "group ab_test:" >> $CONFIG_FILE
