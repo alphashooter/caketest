@@ -7,7 +7,7 @@ def get_defs_config():
     config = None
 
     try:
-        Net.send(Commands.ServerCommand("/defs?group=default", None, Net.RequestMethod.GET)).response
+        config = Net.send(Commands.ServerCommand("/defs?group=default", None, Net.RequestMethod.GET)).response
     except:
         return None
 
