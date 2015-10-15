@@ -563,11 +563,11 @@ class Client(object):
         if not self.__session:
             self.init()
         self.__update_session(
-            {
-                "network_code": str(network),
-                "network_id": str(nid),
-                "access_token": str(token)
-            }
+            ClientNetworkInfo(
+                str(network),
+                str(nid),
+                str(token)
+            )
         )
         self.__state.load()
 
