@@ -331,3 +331,15 @@ class AddRealBalanceCommand(ExecuteCommand):
 class AddGameBalanceCommand(ExecuteCommand):
     def __init__(self, client, value):
         ExecuteCommand.__init__(self, client, "idkfa", {"game_balance": int(value)})
+
+class UseActionCommand(ExecuteCommand):
+    def __init__(self, client, name, params=None):
+        if params is None:
+            params = {}
+        ExecuteCommand.__init__(self, client, "use_action", {"action_name": name, "network_code": str(client.network), "params": params})
+
+class GetActionRewardCommand(ExecuteCommand):
+    def __init__(self, client, name, network=None):
+        if network is None:
+            network = str(client.network)
+        ExecuteCommand.__init__(self, client, "get_action_reward", {"action_name": name, "network_code": str(network)})
