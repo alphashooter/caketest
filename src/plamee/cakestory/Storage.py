@@ -73,26 +73,33 @@ class Storage(utils.sdict):
         self.upload()
 
     def load(self):
-        """
-        Loads storage data.
-        """
-        rsp = Net.send(Commands.FetchStorage(self.__client.storage_session, self.__client.session)).response
-        self.__loaded = True
-        self.__lock()
-        self.merge(rsp["data"])
-        self.__unlock()
+        if str(self.__client.network) != "device":
+            """
+            Loads storage data.
+            """
+            rsp = Net.send(Commands.FetchStorage(self.__client.storage_session, self.__client.session)).response
+            self.__loaded = True
+            self.__lock()
+            self.merge(rsp["data"])
+            self.__unlock()
+        else:
+            self.__loaded = True
+            self.__lock()
+            self.merge({})
+            self.__unlock()
 
     def upload(self):
-        """
-        Uploads storage data.
-        """
-        if self.__get_parent() is not None:
-            self.__get_parent().upload()
-        else:
-            if not self.__is_locked():
-                self.__lock()
-                Net.send(Commands.UpdateStorage(self.__client.storage_session, self.__client.session, self))
-                self.__unlock()
+        if str(self.__client.network) != "device":
+            """
+            Uploads storage data.
+            """
+            if self.__get_parent() is not None:
+                self.__get_parent().upload()
+            else:
+                if not self.__is_locked():
+                    self.__lock()
+                    Net.send(Commands.UpdateStorage(self.__client.storage_session, self.__client.session, self))
+                    self.__unlock()
 
     def reset(self):
         """
