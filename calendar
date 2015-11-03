@@ -1,0 +1,22 @@
+#!/bin/sh
+
+SOURCE_DIR=$(dirname ${BASH_SOURCE[0]})
+WORKING_DIR=`pwd`
+
+CONFIG_FILE=$SOURCE_DIR/calendar.conf.tmp
+LOG_FILE=$WORKING_DIR/calendar_`date +%Y%m%d%H%M`.log
+
+> $CONFIG_FILE
+echo "group defs:" >> $CONFIG_FILE
+echo "    group actions:" >> $CONFIG_FILE
+echo "        module calendar" >> $CONFIG_FILE
+
+$SOURCE_DIR/m3highload-test --config $CONFIG_FILE --host cakestory-stable.plamee.com --verbose  --log $LOG_FILE
+
+rm -f $CONFIG_FILE
+
+echo
+echo "Log saved into $LOG_FILE"
+echo
+
+exit 0
