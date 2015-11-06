@@ -313,6 +313,19 @@ class ClientDefs(object):
         self.__autoload()
         return self.__data["boosters"]
 
+    def get_locales(self):
+        self.__autoload()
+        return self.__data["locales"]
+
+    def get_locale_names(self):
+        return self.get_locales().keys()
+
+    def get_locale_hash(self, name):
+        locales = self.get_locales()
+        if name in locales:
+            return locales[name]
+        return None
+
     def get_unlock_price(self, count):
         self.__autoload()
         if count > 0:
@@ -338,6 +351,8 @@ class ClientDefs(object):
     mapscreen = property(get_mapscreen)
     chapters = property(get_chapters)
     boosters = property(get_boosters)
+    locales = property(get_locales)
+    locale_names = property(get_locale_names)
 
 
 class Client(object):
@@ -599,6 +614,13 @@ class Client(object):
     def get_next_command(self):
         self.__next_command += 1
         return self.__next_command
+
+    def get_locale(self, name):
+        hash = self.defs.get_locale_hash(name)
+        if hash is None:
+            return None
+        return Net.send(Commands.GetLocale(hash)).response
+
 
     def get_state(self):
         """

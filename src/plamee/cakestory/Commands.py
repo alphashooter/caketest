@@ -66,6 +66,10 @@ class GetDefs(ServerCommand):
     def __init__(self, hash):
         ServerCommand.__init__(self, "/defs", {"hash": hash}, Net.RequestMethod.GET)
 
+class GetLocale(ServerCommand):
+    def __init__(self, hash):
+        ServerCommand.__init__(self, "/locale", {"hash": hash}, Net.RequestMethod.GET)
+
 
 class GetLevel(ServerCommand):
     def __init__(self, hash):
