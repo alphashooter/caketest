@@ -8,10 +8,10 @@ def get_locale_file(locale):
 
     my_rows = []
     gd_locales = {}
-    wks_index = [0,1,2,3,4,5,7]
+    wks_index = [0,1,2,3,4,5,7,8 ]
 
     # connect to google
-    json_key = json.load(open("localization.json"))
+    json_key = json.load(open("/Users/golovanton/Documents/m3highload-test/localization.json"))
     scope = ['https://spreadsheets.google.com/feeds']
     credentials = SignedJwtAssertionCredentials(json_key['client_email'], json_key['private_key'].encode(), scope)
     gc = gspread.authorize(credentials)
@@ -28,19 +28,33 @@ def get_locale_file(locale):
 
     return gd_locales
 
+def compare_dict(dict1, dict2):
+    result = None
+    if len(dict1) == len(dict2): # inspect len
+        if dict1.keys() == dict2.keys(): # inspect keys
+            keys_1 = dict1.keys()
+            # inspect items
+            for key in keys_1:
+                if dict1[key] != dict2[key]:
+                    result[key] = dict1[key]
+            return result
+        return "Dictionaries of different tags"
+    else:
+        return "Dictionaries of different lengths"
 # get locales by server
 
 my_client = Client()
 locales = my_client.defs.locale_names
 
 
-# chek for bugs
+# check for bugs
 
 for locale in locales:
     server_locale = my_client.get_locale(locale)
     file_locale = get_locale_file(locale)
-    if server_locale != file_locale:
-        raise RuntimeError("Locale is wrong")
+    result = compare_dict(server_locale, file_locale)
+    if result is not None:
+        raise RuntimeError(result)
 
 
 
