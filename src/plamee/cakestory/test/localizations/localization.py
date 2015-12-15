@@ -29,7 +29,7 @@ def get_locale_file(locale):
     return gd_locales
 
 def compare_dict(dict1, dict2):
-    result = None
+    result = {}
     if len(dict1) == len(dict2): # inspect len
         if dict1.keys() == dict2.keys(): # inspect keys
             keys_1 = dict1.keys()
