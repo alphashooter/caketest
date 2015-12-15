@@ -39,7 +39,9 @@ locales = my_client.defs.locale_names
 for locale in locales:
     server_locale = my_client.get_locale(locale)
     file_locale = get_locale_file(locale)
-    for item in server_locale:
+    if server_locale != file_locale:
+        raise RuntimeError("Locale is wrong")
+
 
 
 
